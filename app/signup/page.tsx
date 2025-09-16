@@ -36,7 +36,6 @@ export default function SignupPage() {
     confirmPassword: false,
     name: false
   })
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -96,7 +96,7 @@ export async function saveTestResult(data: TestResultData) {
   return prisma.testResult.create({
     data: {
       userId: data.userId,
-      answers: data.answers,
+      answers: JSON.stringify(data.answers),
       linguisticScore: data.scores.linguistic,
       logicalScore: data.scores.logical,
       spatialScore: data.scores.spatial,
