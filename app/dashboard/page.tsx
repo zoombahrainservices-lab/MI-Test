@@ -12,19 +12,19 @@ export default function Dashboard() {
     <ProtectedRoute>
       <main className="min-h-screen">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6 sm:py-8">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+              <div className="text-center mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
                   Welcome to Your Dashboard
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   Hello, {user?.name || user?.email}! Here's your Multiple Intelligence Test overview.
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <div className="bg-blue-50 rounded-lg p-6">
                   <h2 className="text-xl font-semibold text-blue-800 mb-3">
                     Take the Test

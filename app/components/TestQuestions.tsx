@@ -20,15 +20,15 @@ export default function TestQuestions({
   const isTestComplete = answeredQuestions === totalQuestions
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-xl p-8">
+    <div className="max-w-4xl mx-auto px-4">
+      <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 lg:p-8">
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">
               Progress: {answeredQuestions} of {totalQuestions} questions
             </span>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">
               {Math.round(progress)}%
             </span>
           </div>
@@ -41,14 +41,14 @@ export default function TestQuestions({
         </div>
 
         {/* Questions */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {questions.map((question, index) => (
-            <div key={question.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-              <div className="mb-4">
+            <div key={question.id} className="border-b border-gray-200 pb-4 sm:pb-6 last:border-b-0">
+              <div className="mb-3 sm:mb-4">
                 <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2">
                   {question.category}
                 </span>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                   {index + 1}. {question.text}
                 </h3>
               </div>
@@ -89,11 +89,11 @@ export default function TestQuestions({
         </div>
 
         {/* Submit Button */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <button
             onClick={onSubmitTest}
             disabled={!isTestComplete}
-            className={`font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform ${
+            className={`font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg transition duration-200 transform w-full sm:w-auto ${
               isTestComplete
                 ? 'bg-green-600 hover:bg-green-700 text-white hover:scale-105 shadow-lg cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
