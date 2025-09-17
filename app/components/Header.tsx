@@ -1,12 +1,21 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => {
+    if (path === '/' && pathname === '/') return true
+    if (path !== '/' && pathname.startsWith(path)) return true
+    return false
+  }
 
   return (
     <header className="bg-white shadow-lg">
@@ -22,19 +31,59 @@ export default function Header() {
 
           {/* Middle - Navigation Links (Desktop) */}
           <div className="hidden lg:flex items-center space-x-8">
-            <Link href="/" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
+            <Link 
+              href="/" 
+              className={`relative transition duration-200 font-medium ${
+                isActive('/') 
+                  ? 'text-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
               Home
+              {isActive('/') && (
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
             </Link>
             {isAuthenticated && (
-              <Link href="/discover" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
+              <Link 
+                href="/discover" 
+                className={`relative transition duration-200 font-medium ${
+                  isActive('/discover') 
+                    ? 'text-blue-600' 
+                    : 'text-gray-600 hover:text-blue-600'
+                }`}
+              >
                 Discover
+                {isActive('/discover') && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600"></div>
+                )}
               </Link>
             )}
-            <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
+            <Link 
+              href="/pricing" 
+              className={`relative transition duration-200 font-medium ${
+                isActive('/pricing') 
+                  ? 'text-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
               Pricing
+              {isActive('/pricing') && (
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
             </Link>
-            <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
+            <Link 
+              href="/contact" 
+              className={`relative transition duration-200 font-medium ${
+                isActive('/contact') 
+                  ? 'text-blue-600' 
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
               Contact
+              {isActive('/contact') && (
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600"></div>
+              )}
             </Link>
           </div>
 
@@ -100,33 +149,61 @@ export default function Header() {
               <div className="flex flex-col space-y-2">
                 <Link 
                   href="/" 
-                  className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                  className={`relative transition duration-200 font-medium py-2 ${
+                    isActive('/') 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Home
+                  {isActive('/') && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                  )}
                 </Link>
                 {isAuthenticated && (
                   <Link 
                     href="/discover" 
-                    className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                    className={`relative transition duration-200 font-medium py-2 ${
+                      isActive('/discover') 
+                        ? 'text-blue-600' 
+                        : 'text-gray-600 hover:text-blue-600'
+                    }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Discover
+                    {isActive('/discover') && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                    )}
                   </Link>
                 )}
                 <Link 
                   href="/pricing" 
-                  className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                  className={`relative transition duration-200 font-medium py-2 ${
+                    isActive('/pricing') 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Pricing
+                  {isActive('/pricing') && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                  )}
                 </Link>
                 <Link 
                   href="/contact" 
-                  className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                  className={`relative transition duration-200 font-medium py-2 ${
+                    isActive('/contact') 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Contact
+                  {isActive('/contact') && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                  )}
                 </Link>
               </div>
 

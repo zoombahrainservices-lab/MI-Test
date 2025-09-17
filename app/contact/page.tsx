@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Header from '../components/Header'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -33,7 +34,9 @@ export default function ContactPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Header />
+        <div className="flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="text-green-500 text-6xl mb-4">✓</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Message Sent!</h2>
@@ -47,12 +50,14 @@ export default function ContactPage() {
             Send Another Message
           </button>
         </div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
