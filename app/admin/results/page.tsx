@@ -41,7 +41,17 @@ export default function ResultsPage() {
           limit: '50'
         })
 
-        const response = await fetch(`/api/admin/results?${params}`)
+        const token = localStorage.getItem('token')
+        if (!token) {
+          throw new Error('No authentication token found')
+        }
+
+        const response = await fetch(`/api/admin/results?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
         if (!response.ok) {
           throw new Error('Failed to fetch results')
         }

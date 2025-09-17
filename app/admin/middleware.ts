@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { verifyToken } from '@/lib/auth'
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  // Check for JWT token in cookies
+  const token = req.cookies.get('token')?.value
 
-  // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  // If no session, redirect to login
-  if (!session) {
+  // If no token, redirect to login
+  if (!token) {
     return NextResponse.redirect(new URL('/login?redirect=/admin', req.url))
   }
 
-  // Check if user is admin (you can implement your own admin check logic here)
-  // For now, we'll check if the user email is in a list of admin emails
-  const adminEmails = [
-    'admin@example.com', // Replace with your admin email
-    'fayas@example.com'  // Add more admin emails as needed
-  ]
+  try {
+    // Verify the JWT token
+    const user = verifyToken(token)
+    
+    if (!user) {
+      return NextResponse.redirect(new URL('/login?redirect=/admin', req.url))
+    }
 
-  if (!adminEmails.includes(session.user.email || '')) {
-    return NextResponse.redirect(new URL('/unauthorized', req.url))
+    // Check if user is admin
+    const adminEmails = [
+      'admin@example.com',
+      'fayas@example.com',
+      'zoombahrainservices@gmail.com'
+    ]
+
+    if (!adminEmails.includes(user.email)) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    console.error('Admin middleware error:', error)
+    return NextResponse.redirect(new URL('/login?redirect=/admin', req.url))
   }
-
-  return res
 }
 
 export const config = {
