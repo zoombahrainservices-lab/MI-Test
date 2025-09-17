@@ -8,7 +8,7 @@ interface TestQuestionsProps {
   answers: Record<number, number>
   onAnswerChange: (questionId: number, answer: number) => void
   onSubmitTest: (timingData?: any) => void
-  currentLevel: 'easy' | 'medium'
+  currentLevel: 'easy' | 'medium' | 'hard'
 }
 
 export default function TestQuestions({ 
@@ -98,12 +98,17 @@ export default function TestQuestions({
           <div className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold ${
             currentLevel === 'easy' 
               ? 'bg-green-100 text-green-800 border-2 border-green-200' 
-              : 'bg-yellow-100 text-yellow-800 border-2 border-yellow-200'
+              : currentLevel === 'medium'
+              ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-200'
+              : 'bg-red-100 text-red-800 border-2 border-red-200'
           }`}>
-            <span className="text-lg mr-2">{currentLevel === 'easy' ? '🟢' : '🟡'}</span>
+            <span className="text-lg mr-2">
+              {currentLevel === 'easy' ? '🟢' : currentLevel === 'medium' ? '🟡' : '🔴'}
+            </span>
             <span className="text-sm uppercase tracking-wide">
-              {currentLevel === 'easy' ? 'Easy Level' : 'Medium Level'} 
-              {currentLevel === 'easy' ? ' (Questions 1-10)' : ' (Questions 11-20)'}
+              {currentLevel === 'easy' ? 'Easy Level (Questions 1-10)' : 
+               currentLevel === 'medium' ? 'Medium Level (Questions 11-20)' : 
+               'Hard Level (Questions 21-30)'}
             </span>
           </div>
         </div>
@@ -121,7 +126,9 @@ export default function TestQuestions({
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${
-                currentLevel === 'easy' ? 'bg-green-500' : 'bg-yellow-500'
+                currentLevel === 'easy' ? 'bg-green-500' : 
+                currentLevel === 'medium' ? 'bg-yellow-500' : 
+                'bg-red-500'
               }`}
               style={{ width: `${progress}%` }}
             ></div>
@@ -208,6 +215,8 @@ export default function TestQuestions({
               currentQuestionIndex === questions.length - 1
                 ? currentLevel === 'easy'
                   ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  : currentLevel === 'medium'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
                   : 'bg-green-600 hover:bg-green-700 text-white'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             } disabled:bg-gray-400 disabled:cursor-not-allowed`}
@@ -215,6 +224,8 @@ export default function TestQuestions({
             {currentQuestionIndex === questions.length - 1 
               ? currentLevel === 'easy' 
                 ? 'Next Level (Medium)' 
+                : currentLevel === 'medium'
+                ? 'Next Level (Hard)'
                 : 'Finish Test'
               : 'Next Question'
             }

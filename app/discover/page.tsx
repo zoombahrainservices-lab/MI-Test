@@ -5,6 +5,7 @@ import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
 import EasyResults from '../components/EasyResults'
+import MediumResults from '../components/MediumResults'
 import TestResults from '../components/TestResults'
 import { useAuth } from '../hooks/useAuth'
 import ProtectedRoute from '../components/ProtectedRoute'
@@ -32,11 +33,12 @@ export interface TimingData {
 
 export default function DiscoverPage() {
   const { isAuthenticated, loading } = useAuth()
-  const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'results'>('intro')
-  const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium'>('easy')
+  const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'medium-results' | 'results'>('intro')
+  const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [easyResults, setEasyResults] = useState<TestResult[]>([])
   const [mediumResults, setMediumResults] = useState<TestResult[]>([])
+  const [hardResults, setHardResults] = useState<TestResult[]>([])
   const [timingData, setTimingData] = useState<TimingData | null>(null)
 
   const questions: Question[] = [
@@ -97,9 +99,38 @@ export default function DiscoverPage() {
     // Additional questions for better coverage
     { id: 19, text: "I can effectively communicate complex ideas through writing", category: "Linguistic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     { id: 20, text: "I enjoy creating and testing hypotheses to solve problems", category: "Logical-Mathematical", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+
+    // HARD QUESTIONS (21-30)
+    // Linguistic Intelligence - Hard
+    { id: 21, text: "I can craft compelling narratives that deeply resonate with diverse audiences across different cultural contexts", category: "Linguistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Logical-Mathematical Intelligence - Hard
+    { id: 22, text: "I excel at solving multi-layered problems that require integrating concepts from multiple disciplines", category: "Logical-Mathematical", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Spatial Intelligence - Hard
+    { id: 23, text: "I can mentally manipulate complex 3D structures and predict how they would behave under various conditions", category: "Spatial", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Musical Intelligence - Hard
+    { id: 24, text: "I can compose original music that evokes specific emotions and tells a story without words", category: "Musical", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Bodily-Kinesthetic Intelligence - Hard
+    { id: 25, text: "I can master complex physical skills that require precise timing, coordination, and muscle memory", category: "Bodily-Kinesthetic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Interpersonal Intelligence - Hard
+    { id: 26, text: "I can mediate conflicts between people with deeply opposing viewpoints and find mutually beneficial solutions", category: "Interpersonal", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Intrapersonal Intelligence - Hard
+    { id: 27, text: "I have profound self-awareness that allows me to predict my own reactions and growth patterns in various life situations", category: "Intrapersonal", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Naturalist Intelligence - Hard
+    { id: 28, text: "I can identify subtle ecological relationships and predict how environmental changes will affect entire ecosystems", category: "Naturalist", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Additional questions for better coverage
+    { id: 29, text: "I can adapt my communication style to influence and inspire people from completely different backgrounds and belief systems", category: "Linguistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 30, text: "I can develop innovative solutions to problems that have never been solved before by combining unexpected approaches", category: "Logical-Mathematical", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
   ]
 
-  const calculateResults = (answers: Record<number, number>, difficulty: 'easy' | 'medium') => {
+  const calculateResults = (answers: Record<number, number>, difficulty: 'easy' | 'medium' | 'hard') => {
     const categories = ['Linguistic', 'Logical-Mathematical', 'Spatial', 'Musical', 'Bodily-Kinesthetic', 'Interpersonal', 'Intrapersonal', 'Naturalist']
     const results: TestResult[] = []
 
@@ -152,9 +183,14 @@ export default function DiscoverPage() {
       setEasyResults(easyTestResults)
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
-      // Calculate medium results and show final results
+      // Calculate medium results and show medium results page
       const mediumTestResults = calculateResults(answers, 'medium')
       setMediumResults(mediumTestResults)
+      setCurrentStep('medium-results')
+    } else if (currentLevel === 'hard') {
+      // Calculate hard results and show final results
+      const hardTestResults = calculateResults(answers, 'hard')
+      setHardResults(hardTestResults)
       if (timing) {
         setTimingData(timing)
       }
@@ -168,12 +204,19 @@ export default function DiscoverPage() {
     setCurrentStep('test')
   }
 
+  const handleMoveToHard = () => {
+    setCurrentLevel('hard')
+    setAnswers({}) // Reset answers for hard level
+    setCurrentStep('test')
+  }
+
   const handleRestartTest = () => {
     setCurrentStep('intro')
     setCurrentLevel('easy')
     setAnswers({})
     setEasyResults([])
     setMediumResults([])
+    setHardResults([])
     setTimingData(null)
   }
 
@@ -224,12 +267,23 @@ export default function DiscoverPage() {
             />
           </ProtectedRoute>
         )}
+
+        {currentStep === 'medium-results' && (
+          <ProtectedRoute>
+            <MediumResults
+              results={mediumResults}
+              onMoveToHard={handleMoveToHard}
+              onRestartTest={handleRestartTest}
+            />
+          </ProtectedRoute>
+        )}
         
         {currentStep === 'results' && (
           <ProtectedRoute>
             <TestResults
               easyResults={easyResults}
               mediumResults={mediumResults}
+              hardResults={hardResults}
               timingData={timingData}
               onRestartTest={handleRestartTest}
             />

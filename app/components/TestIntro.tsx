@@ -30,11 +30,11 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
         <div className="bg-green-50 p-6 rounded-lg">
           <h3 className="text-xl font-semibold text-green-800 mb-3">Test Details</h3>
           <ul className="space-y-2 text-gray-700">
-            <li>• 20 carefully crafted questions (10 Easy + 10 Medium)</li>
-            <li>• 1 minute per question (20 minutes total)</li>
+            <li>• 30 carefully crafted questions (10 Easy + 10 Medium + 10 Hard)</li>
+            <li>• 1 minute per question (30 minutes total)</li>
             <li>• Progressive difficulty levels</li>
             <li>• No right or wrong answers</li>
-            <li>• Comprehensive results for both levels</li>
+            <li>• Comprehensive results for all three levels</li>
           </ul>
         </div>
         </div>
@@ -76,11 +76,18 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
                 <p className="text-sm text-gray-600">Progress to more complex scenarios for deeper insights</p>
               </div>
             </div>
+            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-red-500">
+              <div className="text-2xl mr-3">🔴</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Level 3: Hard Questions (21-30)</h4>
+                <p className="text-sm text-gray-600">Tackle the most complex scenarios for ultimate assessment</p>
+              </div>
+            </div>
             <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-blue-500">
               <div className="text-2xl mr-3">📊</div>
               <div>
                 <h4 className="font-medium text-gray-800">Comprehensive Results</h4>
-                <p className="text-sm text-gray-600">Get detailed scores for both difficulty levels</p>
+                <p className="text-sm text-gray-600">Get detailed scores for all three difficulty levels</p>
               </div>
             </div>
           </div>
