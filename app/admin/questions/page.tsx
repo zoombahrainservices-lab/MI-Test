@@ -34,45 +34,22 @@ export default function QuestionsPage() {
   ]
 
   useEffect(() => {
-    // Simulate loading questions data
     const loadQuestions = async () => {
       setLoading(true)
-      // In a real app, you would fetch this from your API
-      setTimeout(() => {
-        setQuestions([
-          {
-            id: 1,
-            text: "I enjoy reading books and writing stories",
-            category: "Linguistic",
-            difficulty: "easy",
-            options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"],
-            createdAt: "2024-01-01T00:00:00Z",
-            updatedAt: "2024-01-01T00:00:00Z",
-            isActive: true
-          },
-          {
-            id: 2,
-            text: "I can easily solve complex mathematical problems",
-            category: "Logical-Mathematical",
-            difficulty: "medium",
-            options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"],
-            createdAt: "2024-01-01T00:00:00Z",
-            updatedAt: "2024-01-01T00:00:00Z",
-            isActive: true
-          },
-          {
-            id: 3,
-            text: "I have a strong sense of rhythm and can easily pick up musical patterns",
-            category: "Musical",
-            difficulty: "hard",
-            options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"],
-            createdAt: "2024-01-01T00:00:00Z",
-            updatedAt: "2024-01-01T00:00:00Z",
-            isActive: true
-          }
-        ])
+      try {
+        const response = await fetch('/api/admin/questions')
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions')
+        }
+        const data = await response.json()
+        setQuestions(data.questions || [])
+      } catch (error) {
+        console.error('Error loading questions:', error)
+        // Set empty array on error
+        setQuestions([])
+      } finally {
         setLoading(false)
-      }, 1000)
+      }
     }
 
     loadQuestions()
@@ -86,15 +63,30 @@ export default function QuestionsPage() {
     return matchesSearch && matchesCategory && matchesDifficulty
   })
 
-  const handleToggleActive = (questionId: number) => {
+  const handleToggleActive = async (questionId: number) => {
+    // For now, we'll just update the local state since we don't have an isActive field in the database
     setQuestions(questions.map(q => 
       q.id === questionId ? { ...q, isActive: !q.isActive } : q
     ))
   }
 
-  const handleDeleteQuestion = (questionId: number) => {
+  const handleDeleteQuestion = async (questionId: number) => {
     if (confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
-      setQuestions(questions.filter(q => q.id !== questionId))
+      try {
+        const response = await fetch(`/api/admin/questions?id=${questionId}`, {
+          method: 'DELETE'
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete question')
+        }
+        
+        // Remove from local state
+        setQuestions(questions.filter(q => q.id !== questionId))
+      } catch (error) {
+        console.error('Error deleting question:', error)
+        alert('Failed to delete question. Please try again.')
+      }
     }
   }
 
@@ -103,30 +95,63 @@ export default function QuestionsPage() {
     setShowAddModal(true)
   }
 
-  const handleSaveQuestion = (questionData: Partial<Question>) => {
-    if (editingQuestion) {
-      // Update existing question
-      setQuestions(questions.map(q => 
-        q.id === editingQuestion.id 
-          ? { ...q, ...questionData, updatedAt: new Date().toISOString() }
-          : q
-      ))
-    } else {
-      // Add new question
-      const newQuestion: Question = {
-        id: Math.max(...questions.map(q => q.id)) + 1,
-        text: questionData.text || '',
-        category: questionData.category || 'Linguistic',
-        difficulty: questionData.difficulty || 'easy',
-        options: questionData.options || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
+  const handleSaveQuestion = async (questionData: Partial<Question>) => {
+    try {
+      if (editingQuestion) {
+        // Update existing question
+        const response = await fetch('/api/admin/questions', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: editingQuestion.id,
+            text: questionData.text,
+            category: questionData.category,
+            options: questionData.options
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to update question')
+        }
+        
+        const data = await response.json()
+        
+        // Update local state
+        setQuestions(questions.map(q => 
+          q.id === editingQuestion.id ? data.question : q
+        ))
+      } else {
+        // Add new question
+        const response = await fetch('/api/admin/questions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: questionData.text,
+            category: questionData.category,
+            options: questionData.options
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to create question')
+        }
+        
+        const data = await response.json()
+        
+        // Add to local state
+        setQuestions([...questions, data.question])
       }
-      setQuestions([...questions, newQuestion])
+      
+      setShowAddModal(false)
+      setEditingQuestion(null)
+    } catch (error) {
+      console.error('Error saving question:', error)
+      alert('Failed to save question. Please try again.')
     }
-    setShowAddModal(false)
-    setEditingQuestion(null)
   }
 
   const getDifficultyColor = (difficulty: string) => {

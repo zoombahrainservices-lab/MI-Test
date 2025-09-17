@@ -1,102 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
-const prisma = new PrismaClient()
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || 'all'
-    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortBy = searchParams.get('sortBy') || 'created_at'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    // Build where clause
-    const where: any = {}
-    
+    // Build query
+    let query = supabase
+      .from('users')
+      .select(`
+        id,
+        email,
+        name,
+        created_at,
+        test_results(
+          linguistic_percentage,
+          logical_percentage,
+          spatial_percentage,
+          musical_percentage,
+          bodily_percentage,
+          interpersonal_percentage,
+          intrapersonal_percentage,
+          naturalist_percentage,
+          created_at
+        )
+      `)
+
+    // Add search filter
     if (search) {
-      where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } }
-      ]
+      query = query.or(`email.ilike.%${search}%,name.ilike.%${search}%`)
     }
 
-    // Note: We don't have a status field in our User model yet
-    // For now, we'll return all users as 'active'
-    // You can add a status field to the User model if needed
-
-    // Build orderBy clause
-    const orderBy: any = {}
+    // Add sorting
     if (sortBy === 'email') {
-      orderBy.email = sortOrder
-    } else if (sortBy === 'createdAt') {
-      orderBy.createdAt = sortOrder
-    } else if (sortBy === 'totalTests') {
-      orderBy.testResults = { _count: sortOrder }
-    } else if (sortBy === 'averageScore') {
-      // We'll need to calculate this in the application
-      orderBy.createdAt = 'desc' // Default fallback
+      query = query.order('email', { ascending: sortOrder === 'asc' })
+    } else if (sortBy === 'created_at') {
+      query = query.order('created_at', { ascending: sortOrder === 'asc' })
+    } else {
+      query = query.order('created_at', { ascending: false })
     }
 
-    // Get users with their test results
-    const users = await prisma.user.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        testResults: {
-          select: {
-            linguisticPercentage: true,
-            logicalPercentage: true,
-            spatialPercentage: true,
-            musicalPercentage: true,
-            bodilyPercentage: true,
-            interpersonalPercentage: true,
-            intrapersonalPercentage: true,
-            naturalistPercentage: true,
-            createdAt: true
-          }
-        }
-      }
-    })
+    // Add pagination
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    query = query.range(from, to)
+
+    const { data: users, error: usersError } = await query
+
+    if (usersError) {
+      console.error('Error fetching users:', usersError)
+      throw usersError
+    }
 
     // Get total count for pagination
-    const totalCount = await prisma.user.count({ where })
+    let countQuery = supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+
+    if (search) {
+      countQuery = countQuery.or(`email.ilike.%${search}%,name.ilike.%${search}%`)
+    }
+
+    const { count: totalCount, error: countError } = await countQuery
+
+    if (countError) {
+      console.error('Error fetching users count:', countError)
+      throw countError
+    }
 
     // Format users with calculated fields
-    const formattedUsers = users.map(user => {
-      const totalTests = user.testResults.length
+    const formattedUsers = (users || []).map(user => {
+      const totalTests = user.test_results?.length || 0
       
       // Calculate average score
       let averageScore = 0
-      if (totalTests > 0) {
-        const allScores = user.testResults.flatMap(result => [
-          result.linguisticPercentage,
-          result.logicalPercentage,
-          result.spatialPercentage,
-          result.musicalPercentage,
-          result.bodilyPercentage,
-          result.interpersonalPercentage,
-          result.intrapersonalPercentage,
-          result.naturalistPercentage,
+      if (totalTests > 0 && user.test_results) {
+        const allScores = user.test_results.flatMap(result => [
+          result.linguistic_percentage,
+          result.logical_percentage,
+          result.spatial_percentage,
+          result.musical_percentage,
+          result.bodily_percentage,
+          result.interpersonal_percentage,
+          result.intrapersonal_percentage,
+          result.naturalist_percentage,
         ])
         averageScore = Math.round(allScores.reduce((sum, score) => sum + score, 0) / allScores.length)
       }
 
       // Get last login (we'll use the latest test result as proxy)
-      const lastLogin = user.testResults.length > 0 
-        ? user.testResults.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0].createdAt
+      const lastLogin = totalTests > 0 && user.test_results
+        ? user.test_results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
         : null
 
       return {
         id: user.id,
         email: user.email,
         name: user.name,
-        createdAt: user.createdAt.toISOString(),
-        lastLogin: lastLogin?.toISOString(),
+        createdAt: user.created_at,
+        lastLogin: lastLogin,
         totalTests,
         averageScore,
         status: 'active' // Default status since we don't have this field yet
@@ -115,19 +128,17 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit)
+        total: totalCount || 0,
+        totalPages: Math.ceil((totalCount || 0) / limit)
       }
     })
 
   } catch (error) {
     console.error('Error fetching users:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
+      { error: 'Failed to fetch users', details: error.message },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -144,19 +155,23 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete user (this will also delete their test results due to cascade)
-    await prisma.user.delete({
-      where: { id: userId }
-    })
+    const { error: deleteError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId)
+
+    if (deleteError) {
+      console.error('Error deleting user:', deleteError)
+      throw deleteError
+    }
 
     return NextResponse.json({ success: true })
 
   } catch (error) {
     console.error('Error deleting user:', error)
     return NextResponse.json(
-      { error: 'Failed to delete user' },
+      { error: 'Failed to delete user', details: error.message },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
