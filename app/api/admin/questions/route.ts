@@ -30,8 +30,10 @@ export async function GET(request: NextRequest) {
       query = query.eq('category', category)
     }
 
-    // Note: The current schema doesn't have a difficulty field
-    // We'll add it later or handle it in the application logic
+    // Add difficulty filter
+    if (difficulty !== 'all') {
+      query = query.eq('difficulty', difficulty)
+    }
 
     // Add sorting
     query = query.order('id', { ascending: true })
@@ -61,6 +63,10 @@ export async function GET(request: NextRequest) {
       countQuery = countQuery.eq('category', category)
     }
 
+    if (difficulty !== 'all') {
+      countQuery = countQuery.eq('difficulty', difficulty)
+    }
+
     const { count: totalCount, error: countError } = await countQuery
 
     if (countError) {
@@ -73,11 +79,11 @@ export async function GET(request: NextRequest) {
       id: question.id,
       text: question.text,
       category: question.category,
-      difficulty: 'easy', // Default since we don't have this field yet
+      difficulty: question.difficulty || 'easy',
       options: Array.isArray(question.options) ? question.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
-      createdAt: new Date().toISOString(), // Default since we don't have this field
-      updatedAt: new Date().toISOString(), // Default since we don't have this field
-      isActive: true // Default since we don't have this field
+      createdAt: question.created_at || new Date().toISOString(),
+      updatedAt: question.updated_at || new Date().toISOString(),
+      isActive: question.status === 'active'
     }))
 
     return NextResponse.json({
@@ -102,7 +108,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { text, category, options } = body
+    const { text, category, difficulty, options } = body
 
     if (!text || !category) {
       return NextResponse.json(
@@ -116,6 +122,8 @@ export async function POST(request: NextRequest) {
       .insert({
         text,
         category,
+        difficulty: difficulty || 'easy',
+        status: 'active',
         options: options || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree']
       })
       .select()
@@ -132,11 +140,11 @@ export async function POST(request: NextRequest) {
         id: newQuestion.id,
         text: newQuestion.text,
         category: newQuestion.category,
-        difficulty: 'easy',
+        difficulty: newQuestion.difficulty || 'easy',
         options: Array.isArray(newQuestion.options) ? newQuestion.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
+        createdAt: newQuestion.created_at || new Date().toISOString(),
+        updatedAt: newQuestion.updated_at || new Date().toISOString(),
+        isActive: newQuestion.status === 'active'
       }
     })
 
@@ -152,7 +160,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, text, category, options } = body
+    const { id, text, category, difficulty, options, status } = body
 
     if (!id || !text || !category) {
       return NextResponse.json(
@@ -161,13 +169,23 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    const updateData: any = {
+      text,
+      category,
+      options: options || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree']
+    }
+
+    if (difficulty) {
+      updateData.difficulty = difficulty
+    }
+
+    if (status) {
+      updateData.status = status
+    }
+
     const { data: updatedQuestion, error: updateError } = await supabase
       .from('questions')
-      .update({
-        text,
-        category,
-        options: options || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree']
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
@@ -183,11 +201,11 @@ export async function PUT(request: NextRequest) {
         id: updatedQuestion.id,
         text: updatedQuestion.text,
         category: updatedQuestion.category,
-        difficulty: 'easy',
+        difficulty: updatedQuestion.difficulty || 'easy',
         options: Array.isArray(updatedQuestion.options) ? updatedQuestion.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
+        createdAt: updatedQuestion.created_at || new Date().toISOString(),
+        updatedAt: updatedQuestion.updated_at || new Date().toISOString(),
+        isActive: updatedQuestion.status === 'active'
       }
     })
 

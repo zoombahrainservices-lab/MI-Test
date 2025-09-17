@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         id,
         email,
         name,
+        status,
         created_at,
         test_results(
           linguistic_percentage,
@@ -42,11 +43,18 @@ export async function GET(request: NextRequest) {
       query = query.or(`email.ilike.%${search}%,name.ilike.%${search}%`)
     }
 
+    // Add status filter
+    if (status !== 'all') {
+      query = query.eq('status', status)
+    }
+
     // Add sorting
     if (sortBy === 'email') {
       query = query.order('email', { ascending: sortOrder === 'asc' })
     } else if (sortBy === 'created_at') {
       query = query.order('created_at', { ascending: sortOrder === 'asc' })
+    } else if (sortBy === 'status') {
+      query = query.order('status', { ascending: sortOrder === 'asc' })
     } else {
       query = query.order('created_at', { ascending: false })
     }
@@ -70,6 +78,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       countQuery = countQuery.or(`email.ilike.%${search}%,name.ilike.%${search}%`)
+    }
+
+    if (status !== 'all') {
+      countQuery = countQuery.eq('status', status)
     }
 
     const { count: totalCount, error: countError } = await countQuery
@@ -112,7 +124,7 @@ export async function GET(request: NextRequest) {
         lastLogin: lastLogin,
         totalTests,
         averageScore,
-        status: 'active' // Default status since we don't have this field yet
+        status: user.status || 'active'
       }
     })
 
@@ -137,6 +149,50 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching users:', error)
     return NextResponse.json(
       { error: 'Failed to fetch users', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { id, status } = body
+
+    if (!id || !status) {
+      return NextResponse.json(
+        { error: 'User ID and status are required' },
+        { status: 400 }
+      )
+    }
+
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('users')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error('Error updating user status:', updateError)
+      throw updateError
+    }
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        status: updatedUser.status,
+        createdAt: updatedUser.created_at
+      }
+    })
+
+  } catch (error) {
+    console.error('Error updating user status:', error)
+    return NextResponse.json(
+      { error: 'Failed to update user status', details: error.message },
       { status: 500 }
     )
   }

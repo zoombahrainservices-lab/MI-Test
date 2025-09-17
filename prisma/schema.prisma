@@ -15,6 +15,7 @@ model User {
   email     String   @unique
   name      String?
   password  String
+  status    String   @default("active") // active, inactive, suspended
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -64,10 +65,14 @@ model TestResult {
 }
 
 model Question {
-  id       Int    @id @default(autoincrement())
-  text     String
-  category String
-  options  Json   // Array of options stored as JSON
+  id         Int      @id @default(autoincrement())
+  text       String
+  category   String
+  difficulty String   @default("easy") // easy, medium, hard
+  status     String   @default("active") // active, inactive
+  options    Json     // Array of options stored as JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("questions")
 }

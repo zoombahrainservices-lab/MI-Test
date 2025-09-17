@@ -64,10 +64,39 @@ export default function QuestionsPage() {
   })
 
   const handleToggleActive = async (questionId: number) => {
-    // For now, we'll just update the local state since we don't have an isActive field in the database
-    setQuestions(questions.map(q => 
-      q.id === questionId ? { ...q, isActive: !q.isActive } : q
-    ))
+    try {
+      const question = questions.find(q => q.id === questionId)
+      if (!question) return
+
+      const newStatus = question.isActive ? 'inactive' : 'active'
+      
+      const response = await fetch('/api/admin/questions', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: questionId,
+          text: question.text,
+          category: question.category,
+          difficulty: question.difficulty,
+          options: question.options,
+          status: newStatus
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to update question status')
+      }
+      
+      // Update local state
+      setQuestions(questions.map(q => 
+        q.id === questionId ? { ...q, isActive: !q.isActive } : q
+      ))
+    } catch (error) {
+      console.error('Error updating question status:', error)
+      alert('Failed to update question status. Please try again.')
+    }
   }
 
   const handleDeleteQuestion = async (questionId: number) => {
@@ -108,6 +137,7 @@ export default function QuestionsPage() {
             id: editingQuestion.id,
             text: questionData.text,
             category: questionData.category,
+            difficulty: questionData.difficulty,
             options: questionData.options
           })
         })
@@ -132,6 +162,7 @@ export default function QuestionsPage() {
           body: JSON.stringify({
             text: questionData.text,
             category: questionData.category,
+            difficulty: questionData.difficulty,
             options: questionData.options
           })
         })

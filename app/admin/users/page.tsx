@@ -54,10 +54,58 @@ export default function UsersPage() {
 
   // Users are already filtered and sorted on the server side
 
-  const handleStatusChange = (userId: string, newStatus: User['status']) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, status: newStatus } : user
-    ))
+  const handleStatusChange = async (userId: string, newStatus: User['status']) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: userId,
+          status: newStatus
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to update user status')
+      }
+      
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, status: newStatus } : user
+      ))
+    } catch (error) {
+      console.error('Error updating user status:', error)
+      alert('Failed to update user status. Please try again.')
+    }
+  }
+
+  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: userId,
+          status: newStatus
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to update user status')
+      }
+      
+      // Update local state
+      setUsers(users.map(u => 
+        u.id === userId ? { ...u, status: newStatus as any } : u
+      ))
+    } catch (error) {
+      console.error('Error updating user status:', error)
+      alert('Failed to update user status. Please try again.')
+    }
   }
 
   const handleDeleteUser = async (userId: string) => {
