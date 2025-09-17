@@ -41,7 +41,12 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-white rounded-lg shadow-xl p-8">
+      <div className="bg-white rounded-lg shadow-xl p-8 print:shadow-none print:p-4">
+        {/* Print Title - Only visible when printing */}
+        <div className="hidden print:block text-center mb-6 border-b-2 border-gray-300 pb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Multiple Intelligence Test - Easy Level Results</h1>
+          <p className="text-sm text-gray-600">Generated on {new Date().toLocaleDateString()}</p>
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -132,12 +137,18 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
         </div>
 
         {/* Action Buttons */}
-        <div className="text-center space-x-4">
+        <div className="text-center space-x-4 print:hidden">
           <button
             onClick={onMoveToMedium}
             className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
             🟡 Move to Medium Level
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
+          >
+            🖨️ Print Easy Results
           </button>
           <button
             onClick={onRestartTest}
