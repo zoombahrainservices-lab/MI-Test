@@ -139,10 +139,10 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
         {/* Action Buttons */}
         <div className="text-center space-x-4 print:hidden">
           <button
-            onClick={onMoveToMedium}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            onClick={onRestartTest}
+            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
-            🟡 Move to Medium Level
+            Restart Test
           </button>
           <button
             onClick={() => window.print()}
@@ -151,10 +151,10 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
             🖨️ Print Easy Results
           </button>
           <button
-            onClick={onRestartTest}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            onClick={onMoveToMedium}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
-            Restart Test
+            🟡 Move to Medium Level
           </button>
         </div>
       </div>
