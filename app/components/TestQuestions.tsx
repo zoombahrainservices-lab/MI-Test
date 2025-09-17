@@ -19,26 +19,38 @@ export default function TestQuestions({
   currentLevel
 }: TestQuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(60) // 1 minute per question
+  const [timeLeft, setTimeLeft] = useState(() => {
+    // Set initial time based on difficulty level
+    return currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+  })
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [questionTimes, setQuestionTimes] = useState<Record<number, number>>({})
   const [testStartTime] = useState(Date.now())
+  const [isTimedOut, setIsTimedOut] = useState(false)
 
   const currentQuestion = questions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
 
   // Timer effect
   useEffect(() => {
-    if (timeLeft > 0) {
+    if (timeLeft > 0 && !isTimedOut) {
       const timer = setTimeout(() => {
         setTimeLeft(timeLeft - 1)
       }, 1000)
       return () => clearTimeout(timer)
-    } else {
-      // Time's up, auto-advance to next question
-      handleNextQuestion()
+    } else if (timeLeft === 0 && !isTimedOut) {
+      // Time's up, show timeout message
+      setIsTimedOut(true)
     }
-  }, [timeLeft])
+  }, [timeLeft, isTimedOut])
+
+  // Reset timer when level changes
+  useEffect(() => {
+    const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+    setTimeLeft(newTime)
+    setIsTimedOut(false)
+    setQuestionStartTime(Date.now())
+  }, [currentLevel])
 
   const handleAnswerSelect = (answerIndex: number) => {
     onAnswerChange(currentQuestion.id, answerIndex)
@@ -55,8 +67,11 @@ export default function TestQuestions({
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
-      setTimeLeft(60) // Reset timer for next question
+      // Reset timer based on current level
+      const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+      setTimeLeft(newTime)
       setQuestionStartTime(Date.now())
+      setIsTimedOut(false)
     } else {
       // All questions completed - calculate final timing data
       const totalTime = Math.round((Date.now() - testStartTime) / 1000)
@@ -75,9 +90,27 @@ export default function TestQuestions({
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1)
-      setTimeLeft(60) // Reset timer
+      // Reset timer based on current level
+      const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+      setTimeLeft(newTime)
       setQuestionStartTime(Date.now())
+      setIsTimedOut(false)
     }
+  }
+
+  const handleRedoTest = () => {
+    // Reset all state and restart the test
+    setCurrentQuestionIndex(0)
+    const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+    setTimeLeft(newTime)
+    setQuestionStartTime(Date.now())
+    setQuestionTimes({})
+    setIsTimedOut(false)
+  }
+
+  const handleReturnHome = () => {
+    // This will be handled by the parent component
+    window.location.href = '/'
   }
 
   const formatTime = (seconds: number) => {
@@ -88,6 +121,41 @@ export default function TestQuestions({
 
   const getTotalTime = () => {
     return Math.round((Date.now() - testStartTime) / 1000)
+  }
+
+  // Show timeout message if user timed out
+  if (isTimedOut) {
+    return (
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
+          <div className="mb-6">
+            <div className="text-6xl mb-4">⏰</div>
+            <h2 className="text-3xl font-bold text-red-600 mb-4">Time's Up!</h2>
+            <p className="text-lg text-gray-600 mb-2">
+              You ran out of time on the {currentLevel} level.
+            </p>
+            <p className="text-gray-500">
+              Don't worry! You can retry the test or return to the home page.
+            </p>
+          </div>
+          
+          <div className="space-x-4">
+            <button
+              onClick={handleRedoTest}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            >
+              🔄 Redo the Test
+            </button>
+            <button
+              onClick={handleReturnHome}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            >
+              🏠 Return to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -138,14 +206,17 @@ export default function TestQuestions({
         {/* Timer */}
         <div className="mb-6 sm:mb-8 text-center">
           <div className={`inline-flex items-center px-4 py-2 rounded-lg text-lg font-bold ${
-            timeLeft <= 10 ? 'bg-red-100 text-red-600' : 
-            timeLeft <= 30 ? 'bg-yellow-100 text-yellow-600' : 
+            timeLeft <= 5 ? 'bg-red-100 text-red-600' : 
+            timeLeft <= 10 ? 'bg-yellow-100 text-yellow-600' : 
             'bg-green-100 text-green-600'
           }`}>
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Time Left: {formatTime(timeLeft)}
+            <span className="ml-2 text-sm opacity-75">
+              ({currentLevel === 'easy' ? '60s' : currentLevel === 'medium' ? '30s' : '15s'} per question)
+            </span>
           </div>
         </div>
 

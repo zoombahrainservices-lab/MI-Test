@@ -31,7 +31,7 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           <h3 className="text-xl font-semibold text-green-800 mb-3">Test Details</h3>
           <ul className="space-y-2 text-gray-700">
             <li>• 30 carefully crafted questions (10 Easy + 10 Medium + 10 Hard)</li>
-            <li>• 1 minute per question (30 minutes total)</li>
+            <li>• Progressive timing: Easy (60s), Medium (30s), Hard (15s) per question</li>
             <li>• Progressive difficulty levels</li>
             <li>• No right or wrong answers</li>
             <li>• Comprehensive results for all three levels</li>
@@ -55,6 +55,22 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           </div>
         </div>
 
+        <div className="bg-red-50 border-l-4 border-red-400 p-6 mb-8">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                <strong>Timer Warning:</strong> Each question has a time limit! If you run out of time, you'll see a timeout message with options to retry or return home. 
+                The timer gets shorter as difficulty increases: Easy (60s) → Medium (30s) → Hard (15s).
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Progressive Difficulty System */}
         <div className="bg-purple-50 p-6 rounded-lg mb-8">
           <h3 className="text-lg font-semibold text-purple-800 mb-3">Progressive Difficulty System</h3>
@@ -66,21 +82,21 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
               <div className="text-2xl mr-3">🟢</div>
               <div>
                 <h4 className="font-medium text-gray-800">Level 1: Easy Questions (1-10)</h4>
-                <p className="text-sm text-gray-600">Start with straightforward questions to establish your baseline</p>
+                <p className="text-sm text-gray-600">Start with straightforward questions - 60 seconds per question</p>
               </div>
             </div>
             <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-yellow-500">
               <div className="text-2xl mr-3">🟡</div>
               <div>
                 <h4 className="font-medium text-gray-800">Level 2: Medium Questions (11-20)</h4>
-                <p className="text-sm text-gray-600">Progress to more complex scenarios for deeper insights</p>
+                <p className="text-sm text-gray-600">Progress to more complex scenarios - 30 seconds per question</p>
               </div>
             </div>
             <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-red-500">
               <div className="text-2xl mr-3">🔴</div>
               <div>
                 <h4 className="font-medium text-gray-800">Level 3: Hard Questions (21-30)</h4>
-                <p className="text-sm text-gray-600">Tackle the most complex scenarios for ultimate assessment</p>
+                <p className="text-sm text-gray-600">Tackle the most complex scenarios - 15 seconds per question</p>
               </div>
             </div>
             <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-blue-500">
