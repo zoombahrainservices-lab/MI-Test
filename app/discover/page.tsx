@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
+import EasyResults from '../components/EasyResults'
 import TestResults from '../components/TestResults'
 import { useAuth } from '../hooks/useAuth'
 import ProtectedRoute from '../components/ProtectedRoute'
@@ -31,7 +32,7 @@ export interface TimingData {
 
 export default function DiscoverPage() {
   const { isAuthenticated, loading } = useAuth()
-  const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'results'>('intro')
+  const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'results'>('intro')
   const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium'>('easy')
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [easyResults, setEasyResults] = useState<TestResult[]>([])
@@ -146,12 +147,10 @@ export default function DiscoverPage() {
 
   const handleSubmitTest = (timing?: TimingData) => {
     if (currentLevel === 'easy') {
-      // Calculate easy results and move to medium level
+      // Calculate easy results and show easy results page
       const easyTestResults = calculateResults(answers, 'easy')
       setEasyResults(easyTestResults)
-      setCurrentLevel('medium')
-      // Reset answers for medium level
-      setAnswers({})
+      setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show final results
       const mediumTestResults = calculateResults(answers, 'medium')
@@ -161,6 +160,12 @@ export default function DiscoverPage() {
       }
       setCurrentStep('results')
     }
+  }
+
+  const handleMoveToMedium = () => {
+    setCurrentLevel('medium')
+    setAnswers({}) // Reset answers for medium level
+    setCurrentStep('test')
   }
 
   const handleRestartTest = () => {
@@ -209,6 +214,16 @@ export default function DiscoverPage() {
                   />
                 </ProtectedRoute>
               )}
+
+        {currentStep === 'easy-results' && (
+          <ProtectedRoute>
+            <EasyResults
+              results={easyResults}
+              onMoveToMedium={handleMoveToMedium}
+              onRestartTest={handleRestartTest}
+            />
+          </ProtectedRoute>
+        )}
         
         {currentStep === 'results' && (
           <ProtectedRoute>

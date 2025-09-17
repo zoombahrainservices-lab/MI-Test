@@ -63,11 +63,14 @@ export default function TestResults({ easyResults, mediumResults, timingData, on
       <div className="bg-white rounded-lg shadow-xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Your Multiple Intelligence Results
-          </h2>
+          <div className="flex items-center justify-center mb-4">
+            <span className="text-4xl mr-3">📊</span>
+            <h2 className="text-3xl font-bold text-gray-800">
+              Complete Multiple Intelligence Results
+            </h2>
+          </div>
           <p className="text-lg text-gray-600">
-            Here's how your intelligences are distributed across the eight categories
+            Congratulations! You've completed both Easy and Medium levels. Here's your comprehensive intelligence profile combining both difficulty levels.
           </p>
         </div>
 
@@ -103,7 +106,7 @@ export default function TestResults({ easyResults, mediumResults, timingData, on
 
         {/* All Results */}
         <div className="mb-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Complete Intelligence Profile</h3>
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Combined Intelligence Profile (Easy + Medium)</h3>
           <div className="space-y-4">
             {combinedResults.map((result, index) => (
               <div key={result.category} className="bg-gray-50 rounded-lg p-4">
