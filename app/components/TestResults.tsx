@@ -234,16 +234,63 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
               </div>
             </div>
             
-            {/* Question-by-Question Timing */}
+            {/* Level-wise Timing */}
             <div className="mt-6">
-              <h4 className="text-lg font-semibold text-green-800 mb-3">Time per Question</h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {Object.entries(timingData.questionTimes).map(([questionId, time]) => (
-                  <div key={questionId} className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-sm font-medium text-green-600">Q{questionId}</div>
-                    <div className="text-lg font-bold text-green-800">{formatTime(time)}</div>
+              <h4 className="text-lg font-semibold text-green-800 mb-3">Time per Difficulty Level</h4>
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Easy Level */}
+                <div className="bg-white rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-2xl mr-2">🟢</span>
+                    <h5 className="text-lg font-semibold text-green-800">Easy Level</h5>
                   </div>
-                ))}
+                  <div className="text-2xl font-bold text-green-600 mb-1">
+                    {timingData.easyTime ? formatTime(timingData.easyTime) : '0:00'} / 10:00
+                  </div>
+                  <div className="text-sm text-gray-600">10 questions × 60s each</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                      style={{ width: `${timingData.easyTime ? Math.min((timingData.easyTime / 600) * 100, 100) : 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Medium Level */}
+                <div className="bg-white rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-2xl mr-2">🟡</span>
+                    <h5 className="text-lg font-semibold text-yellow-800">Medium Level</h5>
+                  </div>
+                  <div className="text-2xl font-bold text-yellow-600 mb-1">
+                    {timingData.mediumTime ? formatTime(timingData.mediumTime) : '0:00'} / 5:00
+                  </div>
+                  <div className="text-sm text-gray-600">10 questions × 30s each</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-yellow-500 h-2 rounded-full transition-all duration-1000"
+                      style={{ width: `${timingData.mediumTime ? Math.min((timingData.mediumTime / 300) * 100, 100) : 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Hard Level */}
+                <div className="bg-white rounded-lg p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-2xl mr-2">🔴</span>
+                    <h5 className="text-lg font-semibold text-red-800">Hard Level</h5>
+                  </div>
+                  <div className="text-2xl font-bold text-red-600 mb-1">
+                    {timingData.hardTime ? formatTime(timingData.hardTime) : '0:00'} / 2:30
+                  </div>
+                  <div className="text-sm text-gray-600">10 questions × 15s each</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-red-500 h-2 rounded-full transition-all duration-1000"
+                      style={{ width: `${timingData.hardTime ? Math.min((timingData.hardTime / 150) * 100, 100) : 0}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

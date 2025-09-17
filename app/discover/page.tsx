@@ -29,6 +29,9 @@ export interface TimingData {
   totalTime: number
   questionTimes: Record<number, number>
   averageTimePerQuestion: number
+  easyTime?: number
+  mediumTime?: number
+  hardTime?: number
 }
 
 export default function DiscoverPage() {
@@ -40,6 +43,9 @@ export default function DiscoverPage() {
   const [mediumResults, setMediumResults] = useState<TestResult[]>([])
   const [hardResults, setHardResults] = useState<TestResult[]>([])
   const [timingData, setTimingData] = useState<TimingData | null>(null)
+  const [easyTiming, setEasyTiming] = useState<TimingData | null>(null)
+  const [mediumTiming, setMediumTiming] = useState<TimingData | null>(null)
+  const [hardTiming, setHardTiming] = useState<TimingData | null>(null)
 
   const questions: Question[] = [
     // EASY QUESTIONS (1-10)
@@ -176,23 +182,60 @@ export default function DiscoverPage() {
     }))
   }
 
+  const handleClearCurrentLevelAnswers = () => {
+    // Clear answers for the current level only
+    const currentLevelQuestions = questions.filter(q => q.difficulty === currentLevel)
+    const currentLevelQuestionIds = currentLevelQuestions.map(q => q.id)
+    
+    setAnswers(prev => {
+      const newAnswers = { ...prev }
+      currentLevelQuestionIds.forEach(id => {
+        delete newAnswers[id]
+      })
+      return newAnswers
+    })
+  }
+
   const handleSubmitTest = (timing?: TimingData) => {
     if (currentLevel === 'easy') {
       // Calculate easy results and show easy results page
       const easyTestResults = calculateResults(answers, 'easy')
       setEasyResults(easyTestResults)
+      if (timing) {
+        setEasyTiming(timing)
+      }
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show medium results page
       const mediumTestResults = calculateResults(answers, 'medium')
       setMediumResults(mediumTestResults)
+      if (timing) {
+        setMediumTiming(timing)
+      }
       setCurrentStep('medium-results')
     } else if (currentLevel === 'hard') {
       // Calculate hard results and show final results
       const hardTestResults = calculateResults(answers, 'hard')
       setHardResults(hardTestResults)
       if (timing) {
-        setTimingData(timing)
+        setHardTiming(timing)
+        // Create combined timing data for final results
+        const combinedTiming: TimingData = {
+          totalTime: (easyTiming?.totalTime || 0) + (mediumTiming?.totalTime || 0) + (timing.totalTime || 0),
+          questionTimes: {
+            ...(easyTiming?.questionTimes || {}),
+            ...(mediumTiming?.questionTimes || {}),
+            ...(timing.questionTimes || {})
+          },
+          averageTimePerQuestion: 0, // Will be calculated
+          easyTime: easyTiming?.totalTime || 0,
+          mediumTime: mediumTiming?.totalTime || 0,
+          hardTime: timing.totalTime || 0
+        }
+        // Calculate average time per question
+        const totalQuestions = Object.keys(combinedTiming.questionTimes).length
+        combinedTiming.averageTimePerQuestion = totalQuestions > 0 ? Math.round(combinedTiming.totalTime / totalQuestions) : 0
+        setTimingData(combinedTiming)
       }
       setCurrentStep('results')
     }
@@ -218,6 +261,9 @@ export default function DiscoverPage() {
     setMediumResults([])
     setHardResults([])
     setTimingData(null)
+    setEasyTiming(null)
+    setMediumTiming(null)
+    setHardTiming(null)
   }
 
   // Show loading state
@@ -254,6 +300,7 @@ export default function DiscoverPage() {
                     onAnswerChange={handleAnswerChange}
                     onSubmitTest={handleSubmitTest}
                     currentLevel={currentLevel}
+                    onClearAnswers={handleClearCurrentLevelAnswers}
                   />
                 </ProtectedRoute>
               )}

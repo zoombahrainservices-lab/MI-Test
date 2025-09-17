@@ -9,6 +9,7 @@ interface TestQuestionsProps {
   onAnswerChange: (questionId: number, answer: number) => void
   onSubmitTest: (timingData?: any) => void
   currentLevel: 'easy' | 'medium' | 'hard'
+  onClearAnswers?: () => void
 }
 
 export default function TestQuestions({ 
@@ -16,7 +17,8 @@ export default function TestQuestions({
   answers, 
   onAnswerChange, 
   onSubmitTest,
-  currentLevel
+  currentLevel,
+  onClearAnswers
 }: TestQuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -99,13 +101,18 @@ export default function TestQuestions({
   }
 
   const handleRedoTest = () => {
-    // Reset all state and restart the test
+    // Reset all state and restart from the current level
     setCurrentQuestionIndex(0)
     const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
     setTimeLeft(newTime)
     setQuestionStartTime(Date.now())
     setQuestionTimes({})
     setIsTimedOut(false)
+    // Clear answers for the current level
+    if (onClearAnswers) {
+      onClearAnswers()
+    }
+    // Note: We don't change currentLevel - user stays on the same difficulty level
   }
 
   const handleReturnHome = () => {
@@ -135,7 +142,7 @@ export default function TestQuestions({
               You ran out of time on the {currentLevel} level.
             </p>
             <p className="text-gray-500">
-              Don't worry! You can retry the test or return to the home page.
+              Don't worry! You can retry the {currentLevel} level or return to the home page.
             </p>
           </div>
           
@@ -144,7 +151,7 @@ export default function TestQuestions({
               onClick={handleRedoTest}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
             >
-              🔄 Redo the Test
+              🔄 Redo {currentLevel === 'easy' ? 'Easy' : currentLevel === 'medium' ? 'Medium' : 'Hard'} Level
             </button>
             <button
               onClick={handleReturnHome}
