@@ -100,8 +100,10 @@ export default function DiscoverPage() {
     return results.sort((a, b) => b.percentage - a.percentage)
   }
 
-  const handleStartTest = () => {
+  const handleStartTest = (difficulty: 'easy' | 'medium' | 'hard') => {
     setCurrentStep('test')
+    // TODO: Implement difficulty-based question selection
+    console.log('Selected difficulty:', difficulty)
   }
 
   const handleAnswerChange = (questionId: number, answer: number) => {
