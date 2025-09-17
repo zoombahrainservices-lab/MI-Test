@@ -1,5 +1,10 @@
-import { prisma } from './prisma'
+import { createClient } from '@supabase/supabase-js'
 import { hashPassword, verifyPassword } from './auth'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export interface CreateUserData {
   email: string
@@ -44,37 +49,50 @@ export interface TestResultData {
 export async function createUser(data: CreateUserData) {
   const hashedPassword = await hashPassword(data.password)
   
-  return prisma.user.create({
-    data: {
+  const { data: newUser, error } = await supabase
+    .from('users')
+    .insert({
       email: data.email,
       name: data.name,
       password: hashedPassword,
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      createdAt: true,
-    },
-  })
+      is_active: true
+    })
+    .select('id, email, name, created_at')
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to create user: ${error.message}`)
+  }
+
+  return newUser
 }
 
 export async function findUserByEmail(email: string) {
-  return prisma.user.findUnique({
-    where: { email },
-  })
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single()
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+    throw new Error(`Failed to find user: ${error.message}`)
+  }
+
+  return user
 }
 
 export async function findUserById(id: string) {
-  return prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      createdAt: true,
-    },
-  })
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, email, name, created_at')
+    .eq('id', id)
+    .single()
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+    throw new Error(`Failed to find user: ${error.message}`)
+  }
+
+  return user
 }
 
 export async function verifyUserCredentials(email: string, password: string) {
@@ -93,52 +111,83 @@ export async function verifyUserCredentials(email: string, password: string) {
 
 // Test result operations
 export async function saveTestResult(data: TestResultData) {
-  return prisma.testResult.create({
-    data: {
-      userId: data.userId,
-      answers: JSON.stringify(data.answers),
-      linguisticScore: data.scores.linguistic,
-      logicalScore: data.scores.logical,
-      spatialScore: data.scores.spatial,
-      musicalScore: data.scores.musical,
-      bodilyScore: data.scores.bodily,
-      interpersonalScore: data.scores.interpersonal,
-      intrapersonalScore: data.scores.intrapersonal,
-      naturalistScore: data.scores.naturalist,
-      linguisticPercentage: data.percentages.linguistic,
-      logicalPercentage: data.percentages.logical,
-      spatialPercentage: data.percentages.spatial,
-      musicalPercentage: data.percentages.musical,
-      bodilyPercentage: data.percentages.bodily,
-      interpersonalPercentage: data.percentages.interpersonal,
-      intrapersonalPercentage: data.percentages.intrapersonal,
-      naturalistPercentage: data.percentages.naturalist,
-      topIntelligence: data.topIntelligence,
-      secondIntelligence: data.secondIntelligence,
-      thirdIntelligence: data.thirdIntelligence,
-    },
-  })
+  const { data: testResult, error } = await supabase
+    .from('test_results')
+    .insert({
+      user_id: data.userId,
+      answers: data.answers,
+      linguistic_score: data.scores.linguistic,
+      logical_score: data.scores.logical,
+      spatial_score: data.scores.spatial,
+      musical_score: data.scores.musical,
+      bodily_score: data.scores.bodily,
+      interpersonal_score: data.scores.interpersonal,
+      intrapersonal_score: data.scores.intrapersonal,
+      naturalist_score: data.scores.naturalist,
+      linguistic_percentage: data.percentages.linguistic,
+      logical_percentage: data.percentages.logical,
+      spatial_percentage: data.percentages.spatial,
+      musical_percentage: data.percentages.musical,
+      bodily_percentage: data.percentages.bodily,
+      interpersonal_percentage: data.percentages.interpersonal,
+      intrapersonal_percentage: data.percentages.intrapersonal,
+      naturalist_percentage: data.percentages.naturalist,
+      top_intelligence: data.topIntelligence,
+      second_intelligence: data.secondIntelligence,
+      third_intelligence: data.thirdIntelligence,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to save test result: ${error.message}`)
+  }
+
+  return testResult
 }
 
 export async function getUserTestResults(userId: string) {
-  return prisma.testResult.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  })
+  const { data: testResults, error } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to get user test results: ${error.message}`)
+  }
+
+  return testResults
 }
 
 export async function getLatestTestResult(userId: string) {
-  return prisma.testResult.findFirst({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  })
+  const { data: testResult, error } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+    throw new Error(`Failed to get latest test result: ${error.message}`)
+  }
+
+  return testResult
 }
 
 // Question operations
 export async function getAllQuestions() {
-  return prisma.question.findMany({
-    orderBy: { id: 'asc' },
-  })
+  const { data: questions, error } = await supabase
+    .from('questions')
+    .select('*')
+    .order('id', { ascending: true })
+
+  if (error) {
+    throw new Error(`Failed to get questions: ${error.message}`)
+  }
+
+  return questions
 }
 
 export async function createQuestion(data: {
@@ -146,52 +195,89 @@ export async function createQuestion(data: {
   category: string
   options: string[]
 }) {
-  return prisma.question.create({
-    data: {
+  const { data: question, error } = await supabase
+    .from('questions')
+    .insert({
       text: data.text,
       category: data.category,
       options: data.options,
-    },
-  })
+      difficulty: 'easy',
+      is_active: true
+    })
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to create question: ${error.message}`)
+  }
+
+  return question
 }
 
 // Analytics operations
 export async function updateAnalytics() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
 
-  const existingAnalytics = await prisma.analytics.findFirst({
-    where: {
-      date: {
-        gte: today,
-        lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-      },
-    },
-  })
+  // Check if analytics entry exists for today
+  const { data: existingAnalytics, error: findError } = await supabase
+    .from('analytics')
+    .select('*')
+    .gte('date', today.toISOString())
+    .lt('date', tomorrow.toISOString())
+    .single()
+
+  if (findError && findError.code !== 'PGRST116') { // PGRST116 is "not found"
+    throw new Error(`Failed to check analytics: ${findError.message}`)
+  }
 
   if (existingAnalytics) {
     // Update existing analytics
-    return prisma.analytics.update({
-      where: { id: existingAnalytics.id },
-      data: {
-        totalTests: { increment: 1 },
-      },
-    })
+    const { data: updatedAnalytics, error: updateError } = await supabase
+      .from('analytics')
+      .update({
+        total_tests: existingAnalytics.total_tests + 1,
+      })
+      .eq('id', existingAnalytics.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw new Error(`Failed to update analytics: ${updateError.message}`)
+    }
+
+    return updatedAnalytics
   } else {
     // Create new analytics entry
-    return prisma.analytics.create({
-      data: {
-        date: today,
-        totalTests: 1,
-        totalUsers: 0,
-      },
-    })
+    const { data: newAnalytics, error: createError } = await supabase
+      .from('analytics')
+      .insert({
+        date: today.toISOString(),
+        total_tests: 1,
+        total_users: 0,
+      })
+      .select()
+      .single()
+
+    if (createError) {
+      throw new Error(`Failed to create analytics: ${createError.message}`)
+    }
+
+    return newAnalytics
   }
 }
 
 export async function getAnalytics() {
-  return prisma.analytics.findMany({
-    orderBy: { date: 'desc' },
-    take: 30, // Last 30 days
-  })
+  const { data: analytics, error } = await supabase
+    .from('analytics')
+    .select('*')
+    .order('date', { ascending: false })
+    .limit(30) // Last 30 days
+
+  if (error) {
+    throw new Error(`Failed to get analytics: ${error.message}`)
+  }
+
+  return analytics
 }
