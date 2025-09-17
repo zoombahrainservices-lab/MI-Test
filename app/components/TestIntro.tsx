@@ -1,13 +1,8 @@
-'use client'
-
-import { useState } from 'react'
-
 interface TestIntroProps {
-  onStartTest: (difficulty: 'easy' | 'medium' | 'hard') => void
+  onStartTest: () => void
 }
 
 export default function TestIntro({ onStartTest }: TestIntroProps) {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-xl p-8">
@@ -59,72 +54,37 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           </div>
         </div>
 
-        {/* Difficulty Selection */}
-        <div className="bg-purple-50 p-6 rounded-lg mb-8">
-          <h3 className="text-xl font-semibold text-purple-800 mb-4 text-center">Choose Your Difficulty Level</h3>
+        {/* Difficulty Information */}
+        <div className="bg-gray-50 p-6 rounded-lg mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Question Difficulty Levels</h3>
+          <p className="text-gray-600 mb-3">
+            The test includes questions of varying complexity to provide a comprehensive assessment:
+          </p>
           <div className="grid md:grid-cols-3 gap-4">
-            {/* Easy */}
-            <div 
-              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                selectedDifficulty === 'easy' 
-                  ? 'border-green-500 bg-green-100' 
-                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-              }`}
-              onClick={() => setSelectedDifficulty('easy')}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-2">🟢</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Easy</h4>
-                <p className="text-sm text-gray-600">
-                  Straightforward questions with clear options. Perfect for beginners.
-                </p>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">🟢</div>
+              <h4 className="font-medium text-gray-800 mb-1">Easy</h4>
+              <p className="text-sm text-gray-600">Straightforward questions</p>
             </div>
-
-            {/* Medium */}
-            <div 
-              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                selectedDifficulty === 'medium' 
-                  ? 'border-yellow-500 bg-yellow-100' 
-                  : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-50'
-              }`}
-              onClick={() => setSelectedDifficulty('medium')}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-2">🟡</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Medium</h4>
-                <p className="text-sm text-gray-600">
-                  Balanced questions that require some reflection. Recommended for most users.
-                </p>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">🟡</div>
+              <h4 className="font-medium text-gray-800 mb-1">Medium</h4>
+              <p className="text-sm text-gray-600">Balanced complexity</p>
             </div>
-
-            {/* Hard */}
-            <div 
-              className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                selectedDifficulty === 'hard' 
-                  ? 'border-red-500 bg-red-100' 
-                  : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
-              }`}
-              onClick={() => setSelectedDifficulty('hard')}
-            >
-              <div className="text-center">
-                <div className="text-2xl mb-2">🔴</div>
-                <h4 className="font-semibold text-gray-800 mb-2">Hard</h4>
-                <p className="text-sm text-gray-600">
-                  Complex scenarios requiring deep self-reflection. For experienced users.
-                </p>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">🔴</div>
+              <h4 className="font-medium text-gray-800 mb-1">Hard</h4>
+              <p className="text-sm text-gray-600">Complex scenarios</p>
             </div>
           </div>
         </div>
 
         <div className="text-center">
           <button
-            onClick={() => onStartTest(selectedDifficulty)}
+            onClick={onStartTest}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
-            Start the Test ({selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)})
+            Start the Test
           </button>
         </div>
       </div>
