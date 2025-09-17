@@ -4,17 +4,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../hooks/useAuth'
 
-interface HomePageProps {
-  onGoToIntro: () => void
-}
-
-export default function HomePage({ onGoToIntro }: HomePageProps) {
+export default function HomePage() {
   const { isAuthenticated, user } = useAuth()
   const router = useRouter()
 
   const handleTakeTest = () => {
     if (isAuthenticated) {
-      onGoToIntro()
+      router.push('/discover')
     } else {
       router.push('/login')
     }

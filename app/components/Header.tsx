@@ -25,6 +25,11 @@ export default function Header() {
             <Link href="/" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
               Home
             </Link>
+            {isAuthenticated && (
+              <Link href="/discover" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
+                Discover
+              </Link>
+            )}
             <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium">
               Pricing
             </Link>
@@ -100,6 +105,15 @@ export default function Header() {
                 >
                   Home
                 </Link>
+                {isAuthenticated && (
+                  <Link 
+                    href="/discover" 
+                    className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Discover
+                  </Link>
+                )}
                 <Link 
                   href="/pricing" 
                   className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
