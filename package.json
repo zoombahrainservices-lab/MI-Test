@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "dev:legacy": "next dev",
+    "dev:webpack": "next dev",
     "build": "prisma generate && next build",
+    "build:turbo": "prisma generate && next build --turbo",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
