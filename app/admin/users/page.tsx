@@ -10,14 +10,14 @@ interface User {
   lastLogin?: string
   totalTests: number
   averageScore: number
-  status: 'active' | 'inactive' | 'banned'
+  status: 'active' | 'inactive'
 }
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'banned'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [sortBy, setSortBy] = useState<'email' | 'createdAt' | 'totalTests' | 'averageScore'>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
@@ -141,8 +141,7 @@ export default function UsersPage() {
   const getStatusColor = (status: User['status']) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800'
-      case 'inactive': return 'bg-yellow-100 text-yellow-800'
-      case 'banned': return 'bg-red-100 text-red-800'
+      case 'inactive': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -208,7 +207,6 @@ export default function UsersPage() {
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="banned">Banned</option>
             </select>
           </div>
 
@@ -300,7 +298,6 @@ export default function UsersPage() {
                       >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                        <option value="banned">Banned</option>
                       </select>
                       
                       {/* View Details */}

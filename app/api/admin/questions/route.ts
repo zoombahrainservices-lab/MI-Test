@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       options: Array.isArray(question.options) ? question.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
       createdAt: question.created_at || new Date().toISOString(),
       updatedAt: question.updated_at || new Date().toISOString(),
-      isActive: question.status === 'active'
+      isActive: question.is_active !== false // Default to true if undefined
     }))
 
     return NextResponse.json({
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         text,
         category,
         difficulty: difficulty || 'easy',
-        status: 'active',
+        is_active: true,
         options: options || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree']
       })
       .select()
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
         options: Array.isArray(newQuestion.options) ? newQuestion.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
         createdAt: newQuestion.created_at || new Date().toISOString(),
         updatedAt: newQuestion.updated_at || new Date().toISOString(),
-        isActive: newQuestion.status === 'active'
+        isActive: newQuestion.is_active !== false
       }
     })
 
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { id, text, category, difficulty, options, status } = body
+    const { id, text, category, difficulty, options, isActive } = body
 
     if (!id || !text || !category) {
       return NextResponse.json(
@@ -179,8 +179,8 @@ export async function PUT(request: NextRequest) {
       updateData.difficulty = difficulty
     }
 
-    if (status) {
-      updateData.status = status
+    if (isActive !== undefined) {
+      updateData.is_active = isActive
     }
 
     const { data: updatedQuestion, error: updateError } = await supabase
@@ -205,7 +205,7 @@ export async function PUT(request: NextRequest) {
         options: Array.isArray(updatedQuestion.options) ? updatedQuestion.options : ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'],
         createdAt: updatedQuestion.created_at || new Date().toISOString(),
         updatedAt: updatedQuestion.updated_at || new Date().toISOString(),
-        isActive: updatedQuestion.status === 'active'
+        isActive: updatedQuestion.is_active !== false
       }
     })
 

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         id,
         email,
         name,
-        status,
+        is_active,
         created_at,
         test_results(
           linguistic_percentage,
@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
 
     // Add status filter
     if (status !== 'all') {
-      query = query.eq('status', status)
+      const isActive = status === 'active'
+      query = query.eq('is_active', isActive)
     }
 
     // Add sorting
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
     } else if (sortBy === 'created_at') {
       query = query.order('created_at', { ascending: sortOrder === 'asc' })
     } else if (sortBy === 'status') {
-      query = query.order('status', { ascending: sortOrder === 'asc' })
+      query = query.order('is_active', { ascending: sortOrder === 'asc' })
     } else {
       query = query.order('created_at', { ascending: false })
     }
@@ -81,7 +82,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (status !== 'all') {
-      countQuery = countQuery.eq('status', status)
+      const isActive = status === 'active'
+      countQuery = countQuery.eq('is_active', isActive)
     }
 
     const { count: totalCount, error: countError } = await countQuery
@@ -124,7 +126,7 @@ export async function GET(request: NextRequest) {
         lastLogin: lastLogin,
         totalTests,
         averageScore,
-        status: user.status || 'active'
+        status: user.is_active ? 'active' : 'inactive'
       }
     })
 
@@ -159,16 +161,18 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { id, status } = body
 
-    if (!id || !status) {
+    if (!id || status === undefined) {
       return NextResponse.json(
         { error: 'User ID and status are required' },
         { status: 400 }
       )
     }
 
+    const isActive = status === 'active'
+
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
-      .update({ status })
+      .update({ is_active: isActive })
       .eq('id', id)
       .select()
       .single()
@@ -184,7 +188,7 @@ export async function PUT(request: NextRequest) {
         id: updatedUser.id,
         email: updatedUser.email,
         name: updatedUser.name,
-        status: updatedUser.status,
+        status: updatedUser.is_active ? 'active' : 'inactive',
         createdAt: updatedUser.created_at
       }
     })

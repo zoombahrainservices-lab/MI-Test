@@ -15,7 +15,7 @@ model User {
   email     String   @unique
   name      String?
   password  String
-  status    String   @default("active") // active, inactive, suspended
+  isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -69,7 +69,7 @@ model Question {
   text       String
   category   String
   difficulty String   @default("easy") // easy, medium, hard
-  status     String   @default("active") // active, inactive
+  isActive   Boolean  @default(true) @map("is_active")
   options    Json     // Array of options stored as JSON
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")

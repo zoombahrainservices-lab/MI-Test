@@ -81,7 +81,7 @@ export default function QuestionsPage() {
           category: question.category,
           difficulty: question.difficulty,
           options: question.options,
-          status: newStatus
+          isActive: !question.isActive
         })
       })
       
