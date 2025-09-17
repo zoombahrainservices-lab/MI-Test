@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Verify the token
-    const user = verifyToken(token)
+    const user = await verifyToken(token)
     if (!user) {
       return NextResponse.redirect(new URL('/login?redirect=/admin', request.url))
     }
