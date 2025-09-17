@@ -37,7 +37,7 @@ export default function ContactPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <Header />
         <div className="flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="text-green-500 text-6xl mb-4">✓</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Message Sent!</h2>
           <p className="text-gray-600 mb-6">

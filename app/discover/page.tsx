@@ -22,52 +22,47 @@ export interface TestResult {
   description: string
 }
 
+export interface TimingData {
+  totalTime: number
+  questionTimes: Record<number, number>
+  averageTimePerQuestion: number
+}
+
 export default function DiscoverPage() {
   const { isAuthenticated, loading } = useAuth()
   const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'results'>('intro')
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [results, setResults] = useState<TestResult[]>([])
+  const [timingData, setTimingData] = useState<TimingData | null>(null)
 
   const questions: Question[] = [
     // Linguistic Intelligence
     { id: 1, text: "I enjoy reading books and writing stories", category: "Linguistic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 2, text: "I find it easy to learn new languages", category: "Linguistic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 3, text: "I love word games and puzzles", category: "Linguistic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Logical-Mathematical Intelligence
-    { id: 4, text: "I enjoy solving math problems and logic puzzles", category: "Logical-Mathematical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 5, text: "I like to analyze patterns and relationships", category: "Logical-Mathematical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 6, text: "I prefer step-by-step problem solving", category: "Logical-Mathematical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 2, text: "I enjoy solving math problems and logic puzzles", category: "Logical-Mathematical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Spatial Intelligence
-    { id: 7, text: "I can easily visualize objects in 3D", category: "Spatial", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 8, text: "I enjoy drawing, painting, or designing", category: "Spatial", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 9, text: "I have a good sense of direction", category: "Spatial", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 3, text: "I can easily visualize objects in 3D", category: "Spatial", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Musical Intelligence
-    { id: 10, text: "I can easily remember melodies and rhythms", category: "Musical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 11, text: "I enjoy playing musical instruments", category: "Musical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 12, text: "I notice sounds that others might miss", category: "Musical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 4, text: "I can easily remember melodies and rhythms", category: "Musical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Bodily-Kinesthetic Intelligence
-    { id: 13, text: "I learn best through hands-on activities", category: "Bodily-Kinesthetic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 14, text: "I enjoy sports and physical activities", category: "Bodily-Kinesthetic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 15, text: "I have good hand-eye coordination", category: "Bodily-Kinesthetic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 5, text: "I learn best through hands-on activities", category: "Bodily-Kinesthetic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Interpersonal Intelligence
-    { id: 16, text: "I enjoy working in groups and teams", category: "Interpersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 17, text: "I can easily understand other people's feelings", category: "Interpersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 18, text: "I am a natural leader", category: "Interpersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 6, text: "I enjoy working in groups and teams", category: "Interpersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Intrapersonal Intelligence
-    { id: 19, text: "I enjoy spending time alone to reflect", category: "Intrapersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 20, text: "I have a strong sense of self-awareness", category: "Intrapersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 21, text: "I prefer to work independently", category: "Intrapersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 7, text: "I enjoy spending time alone to reflect", category: "Intrapersonal", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Naturalist Intelligence
-    { id: 22, text: "I enjoy spending time in nature", category: "Naturalist", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 23, text: "I can easily identify different plants and animals", category: "Naturalist", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 24, text: "I care deeply about environmental issues", category: "Naturalist", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 8, text: "I enjoy spending time in nature", category: "Naturalist", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    
+    // Additional questions for better coverage
+    { id: 9, text: "I find it easy to learn new languages", category: "Linguistic", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 10, text: "I like to analyze patterns and relationships", category: "Logical-Mathematical", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
   ]
 
   const calculateResults = (answers: Record<number, number>) => {
@@ -116,9 +111,12 @@ export default function DiscoverPage() {
     }))
   }
 
-  const handleSubmitTest = () => {
+  const handleSubmitTest = (timing?: TimingData) => {
     const testResults = calculateResults(answers)
     setResults(testResults)
+    if (timing) {
+      setTimingData(timing)
+    }
     setCurrentStep('results')
   }
 
@@ -126,6 +124,7 @@ export default function DiscoverPage() {
     setCurrentStep('intro')
     setAnswers({})
     setResults([])
+    setTimingData(null)
   }
 
   // Show loading state
@@ -169,6 +168,7 @@ export default function DiscoverPage() {
           <ProtectedRoute>
             <TestResults
               results={results}
+              timingData={timingData}
               onRestartTest={handleRestartTest}
             />
           </ProtectedRoute>

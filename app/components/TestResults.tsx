@@ -1,11 +1,12 @@
-import { TestResult } from '../page'
+import { TestResult, TimingData } from '../discover/page'
 
 interface TestResultsProps {
   results: TestResult[]
+  timingData?: TimingData | null
   onRestartTest: () => void
 }
 
-export default function TestResults({ results, onRestartTest }: TestResultsProps) {
+export default function TestResults({ results, timingData, onRestartTest }: TestResultsProps) {
   const topResult = results[0]
   const secondResult = results[1]
   const thirdResult = results[2]
@@ -36,6 +37,12 @@ export default function TestResults({ results, onRestartTest }: TestResultsProps
       'Naturalist': 'from-emerald-500 to-emerald-600'
     }
     return colors[category as keyof typeof colors] || 'from-gray-500 to-gray-600'
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
@@ -105,6 +112,40 @@ export default function TestResults({ results, onRestartTest }: TestResultsProps
             ))}
           </div>
         </div>
+
+        {/* Timing Data */}
+        {timingData && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-6 mb-8">
+            <h3 className="text-xl font-bold text-green-800 mb-4">Test Performance</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">{formatTime(timingData.totalTime)}</div>
+                <div className="text-sm text-green-700">Total Time</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">{formatTime(timingData.averageTimePerQuestion)}</div>
+                <div className="text-sm text-green-700">Average per Question</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">{Object.keys(timingData.questionTimes).length}</div>
+                <div className="text-sm text-green-700">Questions Completed</div>
+              </div>
+            </div>
+            
+            {/* Question-by-Question Timing */}
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold text-green-800 mb-3">Time per Question</h4>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {Object.entries(timingData.questionTimes).map(([questionId, time]) => (
+                  <div key={questionId} className="bg-white rounded-lg p-3 text-center">
+                    <div className="text-sm font-medium text-green-600">Q{questionId}</div>
+                    <div className="text-lg font-bold text-green-800">{formatTime(time)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Insights */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
