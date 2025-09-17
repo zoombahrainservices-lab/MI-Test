@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { isAdmin } from '@/lib/admin'
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -60,7 +59,7 @@ export default function Header() {
                 )}
               </Link>
             )}
-            {isAuthenticated && isAdmin(user?.email) && (
+            {isAuthenticated && user?.email && ['admin@example.com', 'fayas@example.com'].includes(user.email) && (
               <Link 
                 href="/admin" 
                 className={`relative transition duration-200 font-medium ${
@@ -193,7 +192,7 @@ export default function Header() {
                     )}
                   </Link>
                 )}
-                {isAuthenticated && isAdmin(user?.email) && (
+                {isAuthenticated && user?.email && ['admin@example.com', 'fayas@example.com'].includes(user.email) && (
                   <Link 
                     href="/admin" 
                     className={`relative transition duration-200 font-medium py-2 ${

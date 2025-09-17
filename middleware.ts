@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { adminMiddleware } from './middleware.admin'
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Handle admin routes with dedicated admin middleware
-  if (pathname.startsWith('/admin')) {
-    return await adminMiddleware(request)
-  }
-
-  // Handle user routes (dashboard, discover, login, signup)
+  // Get the token from cookies
   const token = request.cookies.get('token')?.value
 
   // Protected routes that require authentication
@@ -34,7 +28,6 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/discover/:path*',
-    '/admin/:path*',
     '/login',
     '/signup'
   ]

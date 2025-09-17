@@ -1,15 +1,12 @@
-import { NextResponse } from 'next/server'
-import { getAllQuestions } from '@/lib/db-operations'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
-  try {
-    const questions = await getAllQuestions()
-    return NextResponse.json({ questions })
-  } catch (error) {
-    console.error('Get questions error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+// This route is deprecated - redirect to the new user route structure
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    { 
+      error: 'This endpoint is deprecated. Please use /api/user/questions instead.',
+      redirect: '/api/user/questions'
+    },
+    { status: 410 } // Gone
+  )
 }
