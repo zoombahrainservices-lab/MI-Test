@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyToken } from '@/lib/auth'
-import { isAdmin } from '@/lib/admin'
+import { adminMiddleware } from './middleware.admin'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Get the token from cookies
+  // Handle admin routes with dedicated admin middleware
+  if (pathname.startsWith('/admin')) {
+    return await adminMiddleware(request)
+  }
+
+  // Handle user routes (dashboard, discover, login, signup)
   const token = request.cookies.get('token')?.value
 
   // Protected routes that require authentication
@@ -15,25 +19,6 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
-    }
-  }
-
-  // Admin routes - require authentication AND admin privileges
-  if (pathname.startsWith('/admin')) {
-    // If no token, redirect to login
-    if (!token) {
-      return NextResponse.redirect(new URL('/login?redirect=/admin', request.url))
-    }
-
-    // Verify the token
-    const user = await verifyToken(token)
-    if (!user) {
-      return NextResponse.redirect(new URL('/login?redirect=/admin', request.url))
-    }
-
-    // Check if user is admin - only specific emails can access admin panel
-    if (!isAdmin(user.email)) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   }
 
