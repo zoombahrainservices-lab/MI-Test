@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../hooks/useAuth'
 
 interface HomePageProps {
@@ -9,6 +10,15 @@ interface HomePageProps {
 
 export default function HomePage({ onGoToIntro }: HomePageProps) {
   const { isAuthenticated, user } = useAuth()
+  const router = useRouter()
+
+  const handleTakeTest = () => {
+    if (isAuthenticated) {
+      onGoToIntro()
+    } else {
+      router.push('/login')
+    }
+  }
   return (
     <div className="max-w-6xl mx-auto">
       {/* Hero Section */}
@@ -23,7 +33,7 @@ export default function HomePage({ onGoToIntro }: HomePageProps) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
               <button
-                onClick={onGoToIntro}
+                onClick={handleTakeTest}
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg transition duration-200 transform hover:scale-105 shadow-lg"
               >
                 Take the Test Now
@@ -48,7 +58,7 @@ export default function HomePage({ onGoToIntro }: HomePageProps) {
             </p>
             <div className="px-4">
               <button
-                onClick={onGoToIntro}
+                onClick={handleTakeTest}
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg transition duration-200 transform hover:scale-105 shadow-lg"
               >
                 Take the Test Now
@@ -167,7 +177,7 @@ export default function HomePage({ onGoToIntro }: HomePageProps) {
           Join thousands of people who have discovered their unique cognitive strengths.
         </p>
         <button
-          onClick={onGoToIntro}
+          onClick={handleTakeTest}
           className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg transition duration-200 transform hover:scale-105 shadow-lg"
         >
           Start Your Journey
