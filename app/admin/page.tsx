@@ -30,56 +30,30 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate loading dashboard data
     const loadDashboardData = async () => {
       setLoading(true)
-      // In a real app, you would fetch this from your API
-      setTimeout(() => {
+      try {
+        const response = await fetch('/api/admin/dashboard')
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data')
+        }
+        
+        const data = await response.json()
+        setStats(data.stats)
+        setRecentTests(data.recentResults)
+      } catch (error) {
+        console.error('Error loading dashboard data:', error)
+        // Set default values on error
         setStats({
-          totalUsers: 1247,
-          totalTests: 3421,
-          averageScore: 78.5,
-          recentTests: 156
+          totalUsers: 0,
+          totalTests: 0,
+          averageScore: 0,
+          recentTests: 0
         })
-        setRecentTests([
-          {
-            id: '1',
-            userEmail: 'john.doe@example.com',
-            completedAt: '2024-01-15T10:30:00Z',
-            totalScore: 85,
-            level: 'Hard'
-          },
-          {
-            id: '2',
-            userEmail: 'jane.smith@example.com',
-            completedAt: '2024-01-15T09:15:00Z',
-            totalScore: 72,
-            level: 'Medium'
-          },
-          {
-            id: '3',
-            userEmail: 'mike.wilson@example.com',
-            completedAt: '2024-01-15T08:45:00Z',
-            totalScore: 91,
-            level: 'Easy'
-          },
-          {
-            id: '4',
-            userEmail: 'sarah.jones@example.com',
-            completedAt: '2024-01-15T07:20:00Z',
-            totalScore: 68,
-            level: 'Hard'
-          },
-          {
-            id: '5',
-            userEmail: 'alex.brown@example.com',
-            completedAt: '2024-01-15T06:10:00Z',
-            totalScore: 79,
-            level: 'Medium'
-          }
-        ])
+        setRecentTests([])
+      } finally {
         setLoading(false)
-      }, 1000)
+      }
     }
 
     loadDashboardData()

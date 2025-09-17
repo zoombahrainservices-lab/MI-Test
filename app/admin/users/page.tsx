@@ -22,102 +22,37 @@ export default function UsersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
-    // Simulate loading users data
     const loadUsers = async () => {
       setLoading(true)
-      // In a real app, you would fetch this from your API
-      setTimeout(() => {
-        setUsers([
-          {
-            id: '1',
-            email: 'john.doe@example.com',
-            name: 'John Doe',
-            createdAt: '2024-01-10T08:30:00Z',
-            lastLogin: '2024-01-15T10:30:00Z',
-            totalTests: 5,
-            averageScore: 85,
-            status: 'active'
-          },
-          {
-            id: '2',
-            email: 'jane.smith@example.com',
-            name: 'Jane Smith',
-            createdAt: '2024-01-12T14:20:00Z',
-            lastLogin: '2024-01-15T09:15:00Z',
-            totalTests: 3,
-            averageScore: 72,
-            status: 'active'
-          },
-          {
-            id: '3',
-            email: 'mike.wilson@example.com',
-            name: 'Mike Wilson',
-            createdAt: '2024-01-08T16:45:00Z',
-            lastLogin: '2024-01-14T08:45:00Z',
-            totalTests: 8,
-            averageScore: 91,
-            status: 'active'
-          },
-          {
-            id: '4',
-            email: 'sarah.jones@example.com',
-            name: 'Sarah Jones',
-            createdAt: '2024-01-05T11:20:00Z',
-            lastLogin: '2024-01-13T07:20:00Z',
-            totalTests: 2,
-            averageScore: 68,
-            status: 'inactive'
-          },
-          {
-            id: '5',
-            email: 'alex.brown@example.com',
-            name: 'Alex Brown',
-            createdAt: '2024-01-03T09:10:00Z',
-            lastLogin: '2024-01-12T06:10:00Z',
-            totalTests: 12,
-            averageScore: 79,
-            status: 'active'
-          },
-          {
-            id: '6',
-            email: 'spam.user@example.com',
-            name: 'Spam User',
-            createdAt: '2024-01-14T20:30:00Z',
-            lastLogin: '2024-01-14T20:35:00Z',
-            totalTests: 1,
-            averageScore: 0,
-            status: 'banned'
-          }
-        ])
+      try {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          status: statusFilter,
+          sortBy,
+          sortOrder,
+          page: '1',
+          limit: '50'
+        })
+
+        const response = await fetch(`/api/admin/users?${params}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch users')
+        }
+        
+        const data = await response.json()
+        setUsers(data.users)
+      } catch (error) {
+        console.error('Error loading users:', error)
+        setUsers([])
+      } finally {
         setLoading(false)
-      }, 1000)
+      }
     }
 
     loadUsers()
-  }, [])
+  }, [searchTerm, statusFilter, sortBy, sortOrder])
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    let aValue: any = a[sortBy]
-    let bValue: any = b[sortBy]
-
-    if (sortBy === 'createdAt' || sortBy === 'lastLogin') {
-      aValue = new Date(aValue).getTime()
-      bValue = new Date(bValue).getTime()
-    }
-
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1
-    } else {
-      return aValue < bValue ? 1 : -1
-    }
-  })
+  // Users are already filtered and sorted on the server side
 
   const handleStatusChange = (userId: string, newStatus: User['status']) => {
     setUsers(users.map(user => 
@@ -125,9 +60,23 @@ export default function UsersPage() {
     ))
   }
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      setUsers(users.filter(user => user.id !== userId))
+      try {
+        const response = await fetch(`/api/admin/users?userId=${userId}`, {
+          method: 'DELETE'
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete user')
+        }
+        
+        // Remove user from local state
+        setUsers(users.filter(user => user.id !== userId))
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        alert('Failed to delete user. Please try again.')
+      }
     }
   }
 
@@ -247,11 +196,11 @@ export default function UsersPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Users ({sortedUsers.length})
+            Users ({users.length})
           </h3>
         </div>
         <ul className="divide-y divide-gray-200">
-          {sortedUsers.map((user) => (
+          {users.map((user) => (
             <li key={user.id}>
               <div className="px-4 py-4 sm:px-6">
                 <div className="flex items-center justify-between">
@@ -340,8 +289,8 @@ export default function UsersPage() {
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to <span className="font-medium">{sortedUsers.length}</span> of{' '}
-              <span className="font-medium">{sortedUsers.length}</span> results
+              Showing <span className="font-medium">1</span> to <span className="font-medium">{users.length}</span> of{' '}
+              <span className="font-medium">{users.length}</span> results
             </p>
           </div>
           <div>

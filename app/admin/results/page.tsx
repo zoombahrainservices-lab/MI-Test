@@ -23,52 +23,35 @@ export default function ResultsPage() {
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all')
 
   useEffect(() => {
-    // Simulate loading results data
     const loadResults = async () => {
       setLoading(true)
-      setTimeout(() => {
-        setResults([
-          {
-            id: '1',
-            userEmail: 'john.doe@example.com',
-            completedAt: '2024-01-15T10:30:00Z',
-            easyScore: 85,
-            mediumScore: 78,
-            hardScore: 72,
-            totalTime: 1200,
-            intelligenceProfile: [
-              { category: 'Linguistic', percentage: 90 },
-              { category: 'Logical-Mathematical', percentage: 85 },
-              { category: 'Spatial', percentage: 70 }
-            ]
-          },
-          {
-            id: '2',
-            userEmail: 'jane.smith@example.com',
-            completedAt: '2024-01-15T09:15:00Z',
-            easyScore: 72,
-            mediumScore: 68,
-            hardScore: 65,
-            totalTime: 1350,
-            intelligenceProfile: [
-              { category: 'Interpersonal', percentage: 88 },
-              { category: 'Intrapersonal', percentage: 82 },
-              { category: 'Naturalist', percentage: 75 }
-            ]
-          }
-        ])
+      try {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          dateFilter,
+          page: '1',
+          limit: '50'
+        })
+
+        const response = await fetch(`/api/admin/results?${params}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch results')
+        }
+        
+        const data = await response.json()
+        setResults(data.results)
+      } catch (error) {
+        console.error('Error loading results:', error)
+        setResults([])
+      } finally {
         setLoading(false)
-      }, 1000)
+      }
     }
 
     loadResults()
-  }, [])
+  }, [searchTerm, dateFilter])
 
-  const filteredResults = results.filter(result => {
-    const matchesSearch = result.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-    // Add date filtering logic here
-    return matchesSearch
-  })
+  // Results are already filtered on the server side
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -154,11 +137,11 @@ export default function ResultsPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Test Results ({filteredResults.length})
+            Test Results ({results.length})
           </h3>
         </div>
         <ul className="divide-y divide-gray-200">
-          {filteredResults.map((result) => (
+          {results.map((result) => (
             <li key={result.id}>
               <div className="px-4 py-4 sm:px-6">
                 <div className="flex items-center justify-between">
