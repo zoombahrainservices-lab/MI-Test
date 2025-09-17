@@ -8,13 +8,15 @@ interface TestQuestionsProps {
   answers: Record<number, number>
   onAnswerChange: (questionId: number, answer: number) => void
   onSubmitTest: (timingData?: any) => void
+  currentLevel: 'easy' | 'medium'
 }
 
 export default function TestQuestions({ 
   questions, 
   answers, 
   onAnswerChange, 
-  onSubmitTest 
+  onSubmitTest,
+  currentLevel
 }: TestQuestionsProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [timeLeft, setTimeLeft] = useState(60) // 1 minute per question
@@ -91,6 +93,21 @@ export default function TestQuestions({
   return (
     <div className="max-w-4xl mx-auto px-4">
       <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 lg:p-8">
+        {/* Difficulty Level Display */}
+        <div className="mb-4 text-center">
+          <div className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold ${
+            currentLevel === 'easy' 
+              ? 'bg-green-100 text-green-800 border-2 border-green-200' 
+              : 'bg-yellow-100 text-yellow-800 border-2 border-yellow-200'
+          }`}>
+            <span className="text-lg mr-2">{currentLevel === 'easy' ? '🟢' : '🟡'}</span>
+            <span className="text-sm uppercase tracking-wide">
+              {currentLevel === 'easy' ? 'Easy Level' : 'Medium Level'} 
+              {currentLevel === 'easy' ? ' (Questions 1-10)' : ' (Questions 11-20)'}
+            </span>
+          </div>
+        </div>
+
         {/* Progress Bar */}
         <div className="mb-6 sm:mb-8">
           <div className="flex justify-between items-center mb-2">
@@ -103,7 +120,9 @@ export default function TestQuestions({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentLevel === 'easy' ? 'bg-green-500' : 'bg-yellow-500'
+              }`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -185,9 +204,20 @@ export default function TestQuestions({
           <button
             onClick={handleNextQuestion}
             disabled={answers[currentQuestion.id] === undefined}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-6 rounded-lg transition duration-200"
+            className={`font-medium py-2 px-6 rounded-lg transition duration-200 ${
+              currentQuestionIndex === questions.length - 1
+                ? currentLevel === 'easy'
+                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            } disabled:bg-gray-400 disabled:cursor-not-allowed`}
           >
-            {currentQuestionIndex === questions.length - 1 ? 'Finish Test' : 'Next Question'}
+            {currentQuestionIndex === questions.length - 1 
+              ? currentLevel === 'easy' 
+                ? 'Next Level (Medium)' 
+                : 'Finish Test'
+              : 'Next Question'
+            }
           </button>
         </div>
       </div>

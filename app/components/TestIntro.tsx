@@ -27,15 +27,16 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
             </ul>
           </div>
 
-          <div className="bg-green-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold text-green-800 mb-3">Test Details</h3>
-            <ul className="space-y-2 text-gray-700">
-              <li>• 10 carefully crafted questions</li>
-              <li>• 1 minute per question (10 minutes total)</li>
-              <li>• No right or wrong answers</li>
-              <li>• Instant personalized results</li>
-            </ul>
-          </div>
+        <div className="bg-green-50 p-6 rounded-lg">
+          <h3 className="text-xl font-semibold text-green-800 mb-3">Test Details</h3>
+          <ul className="space-y-2 text-gray-700">
+            <li>• 20 carefully crafted questions (10 Easy + 10 Medium)</li>
+            <li>• 1 minute per question (20 minutes total)</li>
+            <li>• Progressive difficulty levels</li>
+            <li>• No right or wrong answers</li>
+            <li>• Comprehensive results for both levels</li>
+          </ul>
+        </div>
         </div>
 
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8">
@@ -54,27 +55,33 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           </div>
         </div>
 
-        {/* Difficulty Information */}
-        <div className="bg-gray-50 p-6 rounded-lg mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Question Difficulty Levels</h3>
-          <p className="text-gray-600 mb-3">
-            The test includes questions of varying complexity to provide a comprehensive assessment:
+        {/* Progressive Difficulty System */}
+        <div className="bg-purple-50 p-6 rounded-lg mb-8">
+          <h3 className="text-lg font-semibold text-purple-800 mb-3">Progressive Difficulty System</h3>
+          <p className="text-gray-600 mb-4">
+            The test follows a progressive structure to provide comprehensive insights:
           </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl mb-2">🟢</div>
-              <h4 className="font-medium text-gray-800 mb-1">Easy</h4>
-              <p className="text-sm text-gray-600">Straightforward questions</p>
+          <div className="space-y-4">
+            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-green-500">
+              <div className="text-2xl mr-3">🟢</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Level 1: Easy Questions (1-10)</h4>
+                <p className="text-sm text-gray-600">Start with straightforward questions to establish your baseline</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl mb-2">🟡</div>
-              <h4 className="font-medium text-gray-800 mb-1">Medium</h4>
-              <p className="text-sm text-gray-600">Balanced complexity</p>
+            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-yellow-500">
+              <div className="text-2xl mr-3">🟡</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Level 2: Medium Questions (11-20)</h4>
+                <p className="text-sm text-gray-600">Progress to more complex scenarios for deeper insights</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl mb-2">🔴</div>
-              <h4 className="font-medium text-gray-800 mb-1">Hard</h4>
-              <p className="text-sm text-gray-600">Complex scenarios</p>
+            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-blue-500">
+              <div className="text-2xl mr-3">📊</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Comprehensive Results</h4>
+                <p className="text-sm text-gray-600">Get detailed scores for both difficulty levels</p>
+              </div>
             </div>
           </div>
         </div>

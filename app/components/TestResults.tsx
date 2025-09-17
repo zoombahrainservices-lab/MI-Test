@@ -1,15 +1,28 @@
 import { TestResult, TimingData } from '../discover/page'
 
 interface TestResultsProps {
-  results: TestResult[]
+  easyResults: TestResult[]
+  mediumResults: TestResult[]
   timingData?: TimingData | null
   onRestartTest: () => void
 }
 
-export default function TestResults({ results, timingData, onRestartTest }: TestResultsProps) {
-  const topResult = results[0]
-  const secondResult = results[1]
-  const thirdResult = results[2]
+export default function TestResults({ easyResults, mediumResults, timingData, onRestartTest }: TestResultsProps) {
+  // Calculate combined results (average of easy and medium)
+  const combinedResults = easyResults.map((easyResult, index) => {
+    const mediumResult = mediumResults[index]
+    const averagePercentage = Math.round((easyResult.percentage + mediumResult.percentage) / 2)
+    return {
+      ...easyResult,
+      percentage: averagePercentage,
+      easyPercentage: easyResult.percentage,
+      mediumPercentage: mediumResult.percentage
+    }
+  }).sort((a, b) => b.percentage - a.percentage)
+
+  const topResult = combinedResults[0]
+  const secondResult = combinedResults[1]
+  const thirdResult = combinedResults[2]
 
   const getIntelligenceIcon = (category: string) => {
     const icons = {
@@ -92,14 +105,19 @@ export default function TestResults({ results, timingData, onRestartTest }: Test
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Complete Intelligence Profile</h3>
           <div className="space-y-4">
-            {results.map((result, index) => (
+            {combinedResults.map((result, index) => (
               <div key={result.category} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{getIntelligenceIcon(result.category)}</span>
                     <span className="text-lg font-semibold text-gray-800">{result.category}</span>
                   </div>
-                  <span className="text-lg font-bold text-gray-600">{result.percentage}%</span>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-600">{result.percentage}%</div>
+                    <div className="text-xs text-gray-500">
+                      Easy: {result.easyPercentage}% | Medium: {result.mediumPercentage}%
+                    </div>
+                  </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                   <div 
@@ -107,9 +125,64 @@ export default function TestResults({ results, timingData, onRestartTest }: Test
                     style={{ width: `${result.percentage}%` }}
                   ></div>
                 </div>
+                <div className="flex space-x-2 mb-2">
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 mb-1">Easy Level</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${result.easyPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 mb-1">Medium Level</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-yellow-500 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${result.mediumPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
                 <p className="text-sm text-gray-600">{result.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Level Comparison */}
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
+          <h3 className="text-xl font-bold text-blue-800 mb-4">Difficulty Level Comparison</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg p-4">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-2">🟢</span>
+                <h4 className="text-lg font-semibold text-green-800">Easy Level Performance</h4>
+              </div>
+              <div className="space-y-2">
+                {easyResults.slice(0, 3).map((result, index) => (
+                  <div key={result.category} className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">{result.category}</span>
+                    <span className="text-sm font-bold text-green-600">{result.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-2">🟡</span>
+                <h4 className="text-lg font-semibold text-yellow-800">Medium Level Performance</h4>
+              </div>
+              <div className="space-y-2">
+                {mediumResults.slice(0, 3).map((result, index) => (
+                  <div key={result.category} className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">{result.category}</span>
+                    <span className="text-sm font-bold text-yellow-600">{result.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
