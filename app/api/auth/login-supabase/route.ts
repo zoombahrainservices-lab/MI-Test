@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
+import { generateToken } from '@/lib/auth'
 
 const supabaseUrl = 'https://xfsakpxluorfhumjopgp.supabase.co'
 const supabaseKey = 'sb_secret_Hzf1NZJpdq-wLRU6W1RN-A_NZHzWxAa'
@@ -50,8 +51,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate a simple token (in production, use JWT)
-    const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64')
+    // Generate proper JWT token
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      name: user.name
+    })
 
     return NextResponse.json({
       user: {

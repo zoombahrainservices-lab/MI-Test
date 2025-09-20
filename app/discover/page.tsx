@@ -59,9 +59,13 @@ export default function DiscoverPage() {
     try {
       // Get the token from localStorage
       const token = localStorage.getItem('token')
+      const userData = localStorage.getItem('user')
+      
       console.log('Token from localStorage:', token ? 'Found' : 'Not found')
       console.log('Token length:', token ? token.length : 0)
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'None')
+      console.log('Full token:', token)
+      console.log('User data from localStorage:', userData)
       console.log('User from useAuth:', user)
       
       if (!token) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { generateToken } from '@/lib/auth'
 
 const supabaseUrl = 'https://xfsakpxluorfhumjopgp.supabase.co'
 const supabaseKey = 'sb_secret_Hzf1NZJpdq-wLRU6W1RN-A_NZHzWxAa'
@@ -25,13 +26,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingUser) {
-      // User exists, return their data
+      // User exists, generate token and return their data
+      const token = generateToken({
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name
+      })
+      
       return NextResponse.json({
         user: {
           id: existingUser.id,
           email: existingUser.email,
           name: existingUser.name
         },
+        token,
         message: 'User logged in successfully'
       })
     }
@@ -58,12 +66,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Generate token for new user
+    const token = generateToken({
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name
+    })
+
     return NextResponse.json({
       user: {
         id: newUser.id,
         email: newUser.email,
         name: newUser.name
       },
+      token,
       message: 'User created successfully'
     })
   } catch (error) {
