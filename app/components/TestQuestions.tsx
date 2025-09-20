@@ -5,30 +5,30 @@ import { Question } from '../discover/page'
 
 interface TestQuestionsProps {
   questions: Question[]
-  answers: Record<number, number>
-  onAnswerChange: (questionId: number, answer: number) => void
-  onSubmitTest: (timingData?: any) => void
-  currentLevel: 'easy' | 'medium' | 'hard'
-  onClearAnswers?: () => void
+  currentQuestionIndex: number
+  onNextQuestion: (answer: number) => void
+  difficulty: 'easy' | 'medium' | 'hard'
+  timing: any
+  setTiming: (timing: any) => void
 }
 
 export default function TestQuestions({ 
   questions, 
-  answers, 
-  onAnswerChange, 
-  onSubmitTest,
-  currentLevel,
-  onClearAnswers
+  currentQuestionIndex,
+  onNextQuestion,
+  difficulty,
+  timing,
+  setTiming
 }: TestQuestionsProps) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [timeLeft, setTimeLeft] = useState(() => {
     // Set initial time based on difficulty level
-    return currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+    return difficulty === 'easy' ? 60 : difficulty === 'medium' ? 30 : 15
   })
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [questionTimes, setQuestionTimes] = useState<Record<number, number>>({})
   const [testStartTime] = useState(Date.now())
   const [isTimedOut, setIsTimedOut] = useState(false)
+  const [selectedAnswer, setSelectedAnswer] = useState<number | undefined>(undefined)
 
   const currentQuestion = questions[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
@@ -48,71 +48,37 @@ export default function TestQuestions({
 
   // Reset timer when level changes
   useEffect(() => {
-    const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
+    const newTime = difficulty === 'easy' ? 60 : difficulty === 'medium' ? 30 : 15
     setTimeLeft(newTime)
     setIsTimedOut(false)
     setQuestionStartTime(Date.now())
-  }, [currentLevel])
+  }, [difficulty])
 
   const handleAnswerSelect = (answerIndex: number) => {
-    onAnswerChange(currentQuestion.id, answerIndex)
+    setSelectedAnswer(answerIndex)
   }
 
   const handleNextQuestion = () => {
-    // Record time taken for current question
-    const timeTaken = Math.round((Date.now() - questionStartTime) / 1000)
-    const updatedQuestionTimes = {
-      ...questionTimes,
-      [currentQuestion.id]: timeTaken
-    }
-    setQuestionTimes(updatedQuestionTimes)
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1)
-      // Reset timer based on current level
-      const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
-      setTimeLeft(newTime)
-      setQuestionStartTime(Date.now())
-      setIsTimedOut(false)
-    } else {
-      // All questions completed - calculate final timing data
-      const totalTime = Math.round((Date.now() - testStartTime) / 1000)
-      const averageTimePerQuestion = totalTime / questions.length
-      
-      const finalTimingData = {
-        totalTime,
-        questionTimes: updatedQuestionTimes,
-        averageTimePerQuestion: Math.round(averageTimePerQuestion)
+    if (selectedAnswer !== undefined) {
+      // Record time taken for current question
+      const timeTaken = Math.round((Date.now() - questionStartTime) / 1000)
+      const updatedQuestionTimes = {
+        ...timing.questionTimes,
+        [currentQuestion.id]: timeTaken
       }
       
-      onSubmitTest(finalTimingData)
+      // Update timing data
+      setTiming({
+        ...timing,
+        questionTimes: updatedQuestionTimes
+      })
+      
+      // Call parent's onNextQuestion
+      onNextQuestion(selectedAnswer)
+      
+      // Reset selected answer for next question
+      setSelectedAnswer(undefined)
     }
-  }
-
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1)
-      // Reset timer based on current level
-      const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
-      setTimeLeft(newTime)
-      setQuestionStartTime(Date.now())
-      setIsTimedOut(false)
-    }
-  }
-
-  const handleRedoTest = () => {
-    // Reset all state and restart from the current level
-    setCurrentQuestionIndex(0)
-    const newTime = currentLevel === 'easy' ? 60 : currentLevel === 'medium' ? 30 : 15
-    setTimeLeft(newTime)
-    setQuestionStartTime(Date.now())
-    setQuestionTimes({})
-    setIsTimedOut(false)
-    // Clear answers for the current level
-    if (onClearAnswers) {
-      onClearAnswers()
-    }
-    // Note: We don't change currentLevel - user stays on the same difficulty level
   }
 
   const handleReturnHome = () => {
@@ -139,20 +105,14 @@ export default function TestQuestions({
             <div className="text-6xl mb-4">⏰</div>
             <h2 className="text-3xl font-bold text-red-600 mb-4">Time's Up!</h2>
             <p className="text-lg text-gray-600 mb-2">
-              You ran out of time on the {currentLevel} level.
+              You ran out of time on the {difficulty} level.
             </p>
             <p className="text-gray-500">
-              Don't worry! You can retry the {currentLevel} level or return to the home page.
+              Don't worry! You can retry the {difficulty} level or return to the home page.
             </p>
           </div>
           
           <div className="space-x-4">
-            <button
-              onClick={handleRedoTest}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
-            >
-              🔄 Redo {currentLevel === 'easy' ? 'Easy' : currentLevel === 'medium' ? 'Medium' : 'Hard'} Level
-            </button>
             <button
               onClick={handleReturnHome}
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
@@ -171,18 +131,18 @@ export default function TestQuestions({
         {/* Difficulty Level Display */}
         <div className="mb-4 text-center">
           <div className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold ${
-            currentLevel === 'easy' 
+            difficulty === 'easy' 
               ? 'bg-green-100 text-green-800 border-2 border-green-200' 
-              : currentLevel === 'medium'
+              : difficulty === 'medium'
               ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-200'
               : 'bg-red-100 text-red-800 border-2 border-red-200'
           }`}>
             <span className="text-lg mr-2">
-              {currentLevel === 'easy' ? '🟢' : currentLevel === 'medium' ? '🟡' : '🔴'}
+              {difficulty === 'easy' ? '🟢' : difficulty === 'medium' ? '🟡' : '🔴'}
             </span>
             <span className="text-sm uppercase tracking-wide">
-              {currentLevel === 'easy' ? 'Easy Level (Questions 1-10)' : 
-               currentLevel === 'medium' ? 'Medium Level (Questions 11-20)' : 
+              {difficulty === 'easy' ? 'Easy Level (Questions 1-10)' : 
+               difficulty === 'medium' ? 'Medium Level (Questions 11-20)' : 
                'Hard Level (Questions 21-30)'}
             </span>
           </div>
@@ -201,8 +161,8 @@ export default function TestQuestions({
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${
-                currentLevel === 'easy' ? 'bg-green-500' : 
-                currentLevel === 'medium' ? 'bg-yellow-500' : 
+                difficulty === 'easy' ? 'bg-green-500' : 
+                difficulty === 'medium' ? 'bg-yellow-500' : 
                 'bg-red-500'
               }`}
               style={{ width: `${progress}%` }}
@@ -222,7 +182,7 @@ export default function TestQuestions({
             </svg>
             Time Left: {formatTime(timeLeft)}
             <span className="ml-2 text-sm opacity-75">
-              ({currentLevel === 'easy' ? '60s' : currentLevel === 'medium' ? '30s' : '15s'} per question)
+              ({difficulty === 'easy' ? '60s' : difficulty === 'medium' ? '30s' : '15s'} per question)
             </span>
           </div>
         </div>
@@ -243,7 +203,7 @@ export default function TestQuestions({
               <label
                 key={optionIndex}
                 className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                  answers[currentQuestion.id] === optionIndex
+                  selectedAnswer === optionIndex
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
@@ -252,16 +212,16 @@ export default function TestQuestions({
                   type="radio"
                   name={`question-${currentQuestion.id}`}
                   value={optionIndex}
-                  checked={answers[currentQuestion.id] === optionIndex}
+                  checked={selectedAnswer === optionIndex}
                   onChange={() => handleAnswerSelect(optionIndex)}
                   className="sr-only"
                 />
                 <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                  answers[currentQuestion.id] === optionIndex
+                  selectedAnswer === optionIndex
                     ? 'border-blue-500 bg-blue-500'
                     : 'border-gray-300'
                 }`}>
-                  {answers[currentQuestion.id] === optionIndex && (
+                  {selectedAnswer === optionIndex && (
                     <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
                   )}
                 </div>
@@ -273,13 +233,7 @@ export default function TestQuestions({
 
         {/* Navigation Buttons */}
         <div className="flex justify-between items-center">
-          <button
-            onClick={handlePreviousQuestion}
-            disabled={currentQuestionIndex === 0}
-            className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-6 rounded-lg transition duration-200"
-          >
-            Previous
-          </button>
+          <div className="w-24"></div>
 
           <div className="text-center">
             <div className="text-sm text-gray-600 mb-1">Total Time</div>
@@ -288,21 +242,21 @@ export default function TestQuestions({
 
           <button
             onClick={handleNextQuestion}
-            disabled={answers[currentQuestion.id] === undefined}
+            disabled={selectedAnswer === undefined}
             className={`font-medium py-2 px-6 rounded-lg transition duration-200 ${
               currentQuestionIndex === questions.length - 1
-                ? currentLevel === 'easy'
+                ? difficulty === 'easy'
                   ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                  : currentLevel === 'medium'
+                  : difficulty === 'medium'
                   ? 'bg-red-600 hover:bg-red-700 text-white'
                   : 'bg-green-600 hover:bg-green-700 text-white'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             } disabled:bg-gray-400 disabled:cursor-not-allowed`}
           >
             {currentQuestionIndex === questions.length - 1 
-              ? currentLevel === 'easy' 
+              ? difficulty === 'easy' 
                 ? 'Next Level (Medium)' 
-                : currentLevel === 'medium'
+                : difficulty === 'medium'
                 ? 'Next Level (Hard)'
                 : 'Finish Test'
               : 'Next Question'
