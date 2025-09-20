@@ -24,16 +24,20 @@ export function useAuth() {
       const token = localStorage.getItem('token')
       const userData = localStorage.getItem('user')
 
+      console.log('🔍 Auth check:', { token: token ? 'Present' : 'Missing', userData: userData ? 'Present' : 'Missing' })
+
       if (token && userData) {
         const parsedUser = JSON.parse(userData)
+        console.log('✅ User authenticated:', parsedUser)
         setUser(parsedUser)
         setIsAuthenticated(true)
       } else {
+        console.log('❌ User not authenticated')
         setUser(null)
         setIsAuthenticated(false)
       }
     } catch (error) {
-      console.error('Error checking auth:', error)
+      console.error('❌ Error checking auth:', error)
       setUser(null)
       setIsAuthenticated(false)
     } finally {
