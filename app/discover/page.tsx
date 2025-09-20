@@ -199,13 +199,12 @@ export default function DiscoverPage() {
     })
   }
 
-  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData) => {
+  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
     try {
       setSavingResults(true)
       setSaveError(null)
       setSaveSuccess(null)
       
-      const { user } = useAuth()
       if (!user) {
         console.error('User not authenticated')
         setSaveError('User not authenticated')
@@ -289,7 +288,7 @@ export default function DiscoverPage() {
       }
       
       // Save easy results to database
-      await saveTestResultToDatabase(easyTestResults, 'easy', timing)
+      await saveTestResultToDatabase(easyTestResults, 'easy', timing, user)
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show medium results page
@@ -300,7 +299,7 @@ export default function DiscoverPage() {
       }
       
       // Save medium results to database
-      await saveTestResultToDatabase(mediumTestResults, 'medium', timing)
+      await saveTestResultToDatabase(mediumTestResults, 'medium', timing, user)
       setCurrentStep('medium-results')
     } else if (currentLevel === 'hard') {
       // Calculate hard results and show final results
@@ -328,7 +327,7 @@ export default function DiscoverPage() {
       }
       
       // Save hard results to database
-      await saveTestResultToDatabase(hardTestResults, 'hard', timing)
+      await saveTestResultToDatabase(hardTestResults, 'hard', timing, user)
       setCurrentStep('results')
     }
   }
