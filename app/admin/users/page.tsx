@@ -34,17 +34,7 @@ export default function UsersPage() {
           limit: '50'
         })
 
-        const token = localStorage.getItem('token')
-        if (!token) {
-          throw new Error('No authentication token found')
-        }
-
-        const response = await fetch(`/api/admin/users?${params}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        const response = await fetch(`/api/admin/users?${params}`)
         if (!response.ok) {
           throw new Error('Failed to fetch users')
         }

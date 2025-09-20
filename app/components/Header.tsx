@@ -59,21 +59,6 @@ export default function Header() {
                 )}
               </Link>
             )}
-            {isAuthenticated && user?.email && ['admin@example.com', 'fayas@example.com'].includes(user.email) && (
-              <Link 
-                href="/admin" 
-                className={`relative transition duration-200 font-medium ${
-                  isActive('/admin') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                Admin
-                {isActive('/admin') && (
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600"></div>
-                )}
-              </Link>
-            )}
             <Link 
               href="/pricing" 
               className={`relative transition duration-200 font-medium ${
@@ -188,22 +173,6 @@ export default function Header() {
                   >
                     Discover
                     {isActive('/discover') && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
-                    )}
-                  </Link>
-                )}
-                {isAuthenticated && user?.email && ['admin@example.com', 'fayas@example.com'].includes(user.email) && (
-                  <Link 
-                    href="/admin" 
-                    className={`relative transition duration-200 font-medium py-2 ${
-                      isActive('/admin') 
-                        ? 'text-blue-600' 
-                        : 'text-gray-600 hover:text-blue-600'
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Admin
-                    {isActive('/admin') && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
                     )}
                   </Link>

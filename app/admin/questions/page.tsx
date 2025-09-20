@@ -49,17 +49,7 @@ export default function QuestionsPage() {
           limit: questionsPerPage.toString()
         })
 
-        const token = localStorage.getItem('token')
-        if (!token) {
-          throw new Error('No authentication token found')
-        }
-
-        const response = await fetch(`/api/admin/questions?${params}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        const response = await fetch(`/api/admin/questions?${params}`)
         if (!response.ok) {
           throw new Error('Failed to fetch questions')
         }

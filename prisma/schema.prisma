@@ -77,6 +77,19 @@ model Question {
   @@map("questions")
 }
 
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("admin") // admin, super_admin
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
 model Analytics {
   id        String   @id @default(cuid())
   date      DateTime @default(now())

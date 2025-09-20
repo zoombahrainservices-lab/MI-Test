@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAdmin } from '@/lib/admin-middleware'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    // Require admin authentication
+    const admin = requireAdmin(request)
     // Get total users count
     const { count: totalUsers, error: usersError } = await supabase
       .from('users')

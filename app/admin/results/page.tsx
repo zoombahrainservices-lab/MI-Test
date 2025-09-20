@@ -5,23 +5,15 @@ import { useState, useEffect } from 'react'
 interface TestResult {
   id: string
   userEmail: string
-  userName?: string
   completedAt: string
-  totalScore: number
-  level: string
-  topIntelligence: string
-  secondIntelligence: string
-  thirdIntelligence: string
-  scores: {
-    linguistic: number
-    logical: number
-    spatial: number
-    musical: number
-    bodily: number
-    interpersonal: number
-    intrapersonal: number
-    naturalist: number
-  }
+  easyScore: number
+  mediumScore: number
+  hardScore: number
+  totalTime: number
+  intelligenceProfile: {
+    category: string
+    percentage: number
+  }[]
 }
 
 export default function ResultsPage() {
@@ -41,23 +33,13 @@ export default function ResultsPage() {
           limit: '50'
         })
 
-        const token = localStorage.getItem('token')
-        if (!token) {
-          throw new Error('No authentication token found')
-        }
-
-        const response = await fetch(`/api/admin/results?${params}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        const response = await fetch(`/api/admin/results?${params}`)
         if (!response.ok) {
           throw new Error('Failed to fetch results')
         }
         
         const data = await response.json()
-        setResults(data.testResults || [])
+        setResults(data.results)
       } catch (error) {
         console.error('Error loading results:', error)
         setResults([])
@@ -81,6 +63,11 @@ export default function ResultsPage() {
     })
   }
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   if (loading) {
     return (
@@ -167,22 +154,22 @@ export default function ResultsPage() {
                     
                     <div className="grid grid-cols-3 gap-4 mb-2">
                       <div className="text-center">
-                        <p className="text-xs text-gray-500">Total Score</p>
-                        <p className="text-sm font-medium text-blue-600">{result.totalScore}%</p>
+                        <p className="text-xs text-gray-500">Easy Score</p>
+                        <p className="text-sm font-medium text-green-600">{result.easyScore}%</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-500">Top Intelligence</p>
-                        <p className="text-sm font-medium text-green-600">{result.topIntelligence}</p>
+                        <p className="text-xs text-gray-500">Medium Score</p>
+                        <p className="text-sm font-medium text-yellow-600">{result.mediumScore}%</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-gray-500">Level</p>
-                        <p className="text-sm font-medium text-purple-600">{result.level}</p>
+                        <p className="text-xs text-gray-500">Hard Score</p>
+                        <p className="text-sm font-medium text-red-600">{result.hardScore}%</p>
                       </div>
                     </div>
 
                     <div className="text-sm text-gray-500">
-                      <p>Top 3 Intelligences: {result.topIntelligence}, {result.secondIntelligence}, {result.thirdIntelligence}</p>
-                      <p>Linguistic: {result.scores.linguistic}% | Logical: {result.scores.logical}% | Spatial: {result.scores.spatial}%</p>
+                      <p>Total Time: {formatTime(result.totalTime)}</p>
+                      <p>Top Intelligences: {result.intelligenceProfile.slice(0, 3).map(i => i.category).join(', ')}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">

@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useAuth } from '../hooks/useAuth'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function AdminLayout({
   children,
@@ -11,8 +10,42 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [admin, setAdmin] = useState<any>(null)
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Check if admin is logged in by making a request to verify the token
+    const checkAdminAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/auth/verify', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setAdmin(data.admin)
+        } else {
+          router.push('/admin/login')
+        }
+      } catch (error) {
+        router.push('/admin/login')
+      }
+    }
+
+    checkAdminAuth()
+  }, [router])
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      router.push('/admin/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: '📊' },
@@ -68,14 +101,14 @@ export default function AdminLayout({
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {user?.email?.charAt(0).toUpperCase()}
+                    {admin?.email?.charAt(0).toUpperCase() || 'A'}
                   </span>
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-700">{admin?.email || 'Admin'}</p>
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="text-xs text-gray-500 hover:text-gray-700"
                 >
                   Sign out
@@ -113,14 +146,14 @@ export default function AdminLayout({
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {user?.email?.charAt(0).toUpperCase()}
+                    {admin?.email?.charAt(0).toUpperCase() || 'A'}
                   </span>
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.email}</p>
+                <p className="text-sm font-medium text-gray-700">{admin?.email || 'Admin'}</p>
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="text-xs text-gray-500 hover:text-gray-700"
                 >
                   Sign out
