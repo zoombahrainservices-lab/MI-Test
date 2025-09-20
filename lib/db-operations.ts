@@ -43,6 +43,8 @@ export interface TestResultData {
   topIntelligence: string
   secondIntelligence: string
   thirdIntelligence: string
+  level?: string
+  timing?: any
 }
 
 // User operations
@@ -135,6 +137,8 @@ export async function saveTestResult(data: TestResultData) {
       top_intelligence: data.topIntelligence,
       second_intelligence: data.secondIntelligence,
       third_intelligence: data.thirdIntelligence,
+      level: data.level || 'combined',
+      timing_data: data.timing || null,
     })
     .select()
     .single()

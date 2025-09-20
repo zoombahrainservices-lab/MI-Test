@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
@@ -36,17 +36,6 @@ export interface TimingData {
 
 export default function DiscoverPage() {
   const { isAuthenticated, loading, user } = useAuth()
-  
-  // Debug authentication state
-  useEffect(() => {
-    console.log('🔍 Discover Page Auth State:', {
-      isAuthenticated,
-      loading,
-      user,
-      token: localStorage.getItem('token') ? 'Present' : 'Missing',
-      userData: localStorage.getItem('user') ? 'Present' : 'Missing'
-    })
-  }, [isAuthenticated, loading, user])
   const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'medium-results' | 'results'>('intro')
   const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [answers, setAnswers] = useState<Record<number, number>>({})
@@ -57,9 +46,81 @@ export default function DiscoverPage() {
   const [easyTiming, setEasyTiming] = useState<TimingData | null>(null)
   const [mediumTiming, setMediumTiming] = useState<TimingData | null>(null)
   const [hardTiming, setHardTiming] = useState<TimingData | null>(null)
-  const [savingResults, setSavingResults] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
-  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  // Function to save test results to database
+  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData) => {
+    if (!user) {
+      console.error('No user found for saving test results')
+      return
+    }
+
+    setSaving(true)
+    try {
+      // Get the token from localStorage
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      // Convert results to the format expected by the API
+      const scores = {
+        linguistic: results.find(r => r.category === 'Linguistic')?.score || 0,
+        logical: results.find(r => r.category === 'Logical-Mathematical')?.score || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.score || 0,
+        musical: results.find(r => r.category === 'Musical')?.score || 0,
+        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.score || 0,
+        interpersonal: results.find(r => r.category === 'Interpersonal')?.score || 0,
+        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.score || 0,
+        naturalist: results.find(r => r.category === 'Naturalist')?.score || 0,
+      }
+
+      const percentages = {
+        linguistic: results.find(r => r.category === 'Linguistic')?.percentage || 0,
+        logical: results.find(r => r.category === 'Logical-Mathematical')?.percentage || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.percentage || 0,
+        musical: results.find(r => r.category === 'Musical')?.percentage || 0,
+        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.percentage || 0,
+        interpersonal: results.find(r => r.category === 'Interpersonal')?.percentage || 0,
+        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.percentage || 0,
+        naturalist: results.find(r => r.category === 'Naturalist')?.percentage || 0,
+      }
+
+      const topIntelligence = results[0]?.category || ''
+      const secondIntelligence = results[1]?.category || ''
+      const thirdIntelligence = results[2]?.category || ''
+
+      const response = await fetch('/api/test-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          answers: answers,
+          scores,
+          percentages,
+          topIntelligence,
+          secondIntelligence,
+          thirdIntelligence,
+          level,
+          timing
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to save test results: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log(`Test results saved for ${level} level:`, data)
+    } catch (error) {
+      console.error('Error saving test results:', error)
+      // Don't throw the error - just log it so the user can continue
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const questions: Question[] = [
     // EASY QUESTIONS (1-10)
@@ -210,133 +271,6 @@ export default function DiscoverPage() {
     })
   }
 
-  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
-    try {
-      console.log('Starting to save test results:', { level, user, results })
-      
-      // Check if user is authenticated
-      if (!user) {
-        console.error('User not authenticated - checking localStorage for fallback')
-        
-        // Try to get user data from localStorage as fallback
-        const token = localStorage.getItem('token')
-        const userData = localStorage.getItem('user')
-        
-        if (token && userData) {
-          try {
-            const parsedUser = JSON.parse(userData)
-            console.log('Using fallback user data from localStorage:', parsedUser)
-            user = parsedUser
-          } catch (parseError) {
-            console.error('Failed to parse user data from localStorage:', parseError)
-            return false
-          }
-        } else {
-          console.error('No user data available in localStorage either')
-          return false
-        }
-      }
-
-      // Convert results to the format expected by the API
-      const scores = {
-        linguistic: results.find(r => r.category === 'Linguistic')?.score || 0,
-        logical: results.find(r => r.category === 'Logical-Mathematical')?.score || 0,
-        spatial: results.find(r => r.category === 'Spatial')?.score || 0,
-        musical: results.find(r => r.category === 'Musical')?.score || 0,
-        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.score || 0,
-        interpersonal: results.find(r => r.category === 'Interpersonal')?.score || 0,
-        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.score || 0,
-        naturalist: results.find(r => r.category === 'Naturalist')?.score || 0,
-      }
-
-      const percentages = {
-        linguistic: results.find(r => r.category === 'Linguistic')?.percentage || 0,
-        logical: results.find(r => r.category === 'Logical-Mathematical')?.percentage || 0,
-        spatial: results.find(r => r.category === 'Spatial')?.percentage || 0,
-        musical: results.find(r => r.category === 'Musical')?.percentage || 0,
-        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.percentage || 0,
-        interpersonal: results.find(r => r.category === 'Interpersonal')?.percentage || 0,
-        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.percentage || 0,
-        naturalist: results.find(r => r.category === 'Naturalist')?.percentage || 0,
-      }
-
-      const topIntelligence = results[0]?.category || 'Linguistic'
-      const secondIntelligence = results[1]?.category || 'Logical-Mathematical'
-      const thirdIntelligence = results[2]?.category || 'Spatial'
-
-      // Convert answers to the expected format
-      const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
-        questionId: parseInt(questionId),
-        answer: answer
-      }))
-
-      // Add level and timing information to answers
-      const answersWithMetadata = {
-        answers: answersArray,
-        level: level,
-        timing: timing,
-        completedAt: new Date().toISOString()
-      }
-
-      const requestData = {
-        answers: answersWithMetadata,
-        scores,
-        percentages,
-        topIntelligence,
-        secondIntelligence,
-        thirdIntelligence
-      }
-      
-      console.log('Sending request to API:', requestData)
-      
-      // Get token and verify it's not expired
-      const token = localStorage.getItem('token')
-      if (!token) {
-        console.error('No token found in localStorage')
-        return false
-      }
-      
-      // Check if token is expired
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        const now = Math.floor(Date.now() / 1000)
-        if (payload.exp < now) {
-          console.error('Token is expired')
-          return false
-        }
-        console.log('Token is valid, expires at:', new Date(payload.exp * 1000))
-      } catch (tokenError) {
-        console.error('Error checking token:', tokenError)
-        return false
-      }
-      
-      const response = await fetch('/api/test-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestData)
-      })
-
-      console.log('API response status:', response.status)
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('API error response:', errorData)
-        throw new Error(`Failed to save test result: ${errorData.error || 'Unknown error'}`)
-      }
-
-      const responseData = await response.json()
-      console.log('API success response:', responseData)
-      console.log(`${level} level results saved successfully`)
-      return true
-    } catch (error) {
-      console.error(`Error saving ${level} level results:`, error)
-      return false
-    }
-  }
-
   const handleSubmitTest = async (timing?: TimingData) => {
     if (currentLevel === 'easy') {
       // Calculate easy results and show easy results page
@@ -346,13 +280,9 @@ export default function DiscoverPage() {
         setEasyTiming(timing)
       }
       
-      // Try to save easy results to database (don't block progression if it fails)
-      try {
-        await saveTestResultToDatabase(easyTestResults, 'easy', timing, user)
-      } catch (error) {
-        console.error('Failed to save easy results:', error)
-        // Don't block progression - just log the error
-      }
+      // Save easy results to database
+      await saveTestResultToDatabase(easyTestResults, 'easy', timing)
+      
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show medium results page
@@ -362,13 +292,9 @@ export default function DiscoverPage() {
         setMediumTiming(timing)
       }
       
-      // Try to save medium results to database (don't block progression if it fails)
-      try {
-        await saveTestResultToDatabase(mediumTestResults, 'medium', timing, user)
-      } catch (error) {
-        console.error('Failed to save medium results:', error)
-        // Don't block progression - just log the error
-      }
+      // Save medium results to database
+      await saveTestResultToDatabase(mediumTestResults, 'medium', timing)
+      
       setCurrentStep('medium-results')
     } else if (currentLevel === 'hard') {
       // Calculate hard results and show final results
@@ -395,13 +321,9 @@ export default function DiscoverPage() {
         setTimingData(combinedTiming)
       }
       
-      // Try to save hard results to database (don't block progression if it fails)
-      try {
-        await saveTestResultToDatabase(hardTestResults, 'hard', timing, user)
-      } catch (error) {
-        console.error('Failed to save hard results:', error)
-        // Don't block progression - just log the error
-      }
+      // Save hard results to database
+      await saveTestResultToDatabase(hardTestResults, 'hard', timing)
+      
       setCurrentStep('results')
     }
   }
@@ -476,9 +398,7 @@ export default function DiscoverPage() {
               results={easyResults}
               onMoveToMedium={handleMoveToMedium}
               onRestartTest={handleRestartTest}
-              savingResults={savingResults}
-              saveError={saveError}
-              saveSuccess={saveSuccess}
+              saving={saving}
             />
           </ProtectedRoute>
         )}
@@ -489,9 +409,7 @@ export default function DiscoverPage() {
               results={mediumResults}
               onMoveToHard={handleMoveToHard}
               onRestartTest={handleRestartTest}
-              savingResults={savingResults}
-              saveError={saveError}
-              saveSuccess={saveSuccess}
+              saving={saving}
             />
           </ProtectedRoute>
         )}
@@ -504,6 +422,7 @@ export default function DiscoverPage() {
               hardResults={hardResults}
               timingData={timingData}
               onRestartTest={handleRestartTest}
+              saving={saving}
             />
           </ProtectedRoute>
         )}

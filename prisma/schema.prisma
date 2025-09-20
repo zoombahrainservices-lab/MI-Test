@@ -58,6 +58,10 @@ model TestResult {
   secondIntelligence   String @map("second_intelligence")
   thirdIntelligence    String @map("third_intelligence")
 
+  // Level and timing data
+  level                String @default("combined")
+  timingData           Json?  @map("timing_data")
+
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
