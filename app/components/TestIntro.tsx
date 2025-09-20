@@ -8,7 +8,7 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
       <div className="bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Welcome to the Multiple Intelligence Assessment
+            Welcome to MindMatrix
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
             Based on Howard Gardner's theory of multiple intelligences, this test will help you 

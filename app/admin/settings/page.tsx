@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    siteName: 'Multiple Intelligence Test',
+    siteName: 'MindMatrix',
     siteDescription: 'Discover your unique cognitive strengths',
     allowRegistration: true,
     requireEmailVerification: false,
@@ -53,7 +53,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-2 text-sm text-gray-700">
-          Configure your Multiple Intelligence Test platform settings.
+          Configure your MindMatrix platform settings.
         </p>
       </div>
 

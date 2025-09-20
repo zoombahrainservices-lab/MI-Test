@@ -1,10 +1,10 @@
-# Multiple Intelligence Test Website
+# MindMatrix
 
 A modern, responsive web application built with Next.js, TypeScript, and Tailwind CSS that implements Howard Gardner's Multiple Intelligence Theory assessment.
 
 ## Features
 
-- **Comprehensive Assessment**: 30 carefully crafted questions covering all 9 intelligence types
+- **Comprehensive Assessment**: 28 carefully crafted questions covering all 9 intelligence types
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
 - **Real-time Progress**: Visual progress tracking during the test
 - **Instant Results**: Immediate personalized results with detailed insights

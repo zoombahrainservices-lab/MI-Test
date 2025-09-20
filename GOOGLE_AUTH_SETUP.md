@@ -2,7 +2,7 @@
 
 ## 🚀 Google OAuth Configuration
 
-To enable Google authentication in your MI Test website, you need to configure Google OAuth in your Supabase project.
+To enable Google authentication in your MindMatrix website, you need to configure Google OAuth in your Supabase project.
 
 ### Step 1: Create Google OAuth Credentials
 
@@ -12,7 +12,7 @@ To enable Google authentication in your MI Test website, you need to configure G
 
 2. **Create a New Project (or select existing)**
    - Click "Select a project" → "New Project"
-   - Name: "MI Test Website" (or any name you prefer)
+   - Name: "MindMatrix Website" (or any name you prefer)
    - Click "Create"
 
 3. **Enable Google+ API**
@@ -24,7 +24,7 @@ To enable Google authentication in your MI Test website, you need to configure G
    - Go to "APIs & Services" → "Credentials"
    - Click "Create Credentials" → "OAuth 2.0 Client IDs"
    - Application type: "Web application"
-   - Name: "MI Test Website OAuth"
+   - Name: "MindMatrix Website OAuth"
 
 5. **Configure Authorized Redirect URIs**
    - Add these URIs:

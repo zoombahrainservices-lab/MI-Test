@@ -20,7 +20,7 @@ export default function Dashboard() {
                   Welcome to Your Dashboard
                 </h1>
                 <p className="text-sm sm:text-base text-gray-600">
-                  Hello, {user?.name || user?.email}! Here's your Multiple Intelligence Test overview.
+                  Hello, {user?.name || user?.email}! Here's your MindMatrix overview.
                 </p>
               </div>
 

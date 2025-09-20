@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'MI Test - Multiple Intelligence Assessment',
+  title: 'MindMatrix - Multiple Intelligence Assessment',
   description: 'Discover your multiple intelligence strengths with our comprehensive assessment tool',
 }
 

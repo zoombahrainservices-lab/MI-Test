@@ -63,11 +63,11 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
           <div className="flex items-center justify-center mb-4">
             <span className="text-4xl mr-3">📊</span>
             <h2 className="text-3xl font-bold text-gray-800">
-              Your Multiple Intelligence Results
+              Your MindMatrix Results
             </h2>
           </div>
           <p className="text-lg text-gray-600">
-            Congratulations! You've completed the Multiple Intelligence Test. Here's your comprehensive intelligence profile.
+            Congratulations! You've completed the MindMatrix assessment. Here's your comprehensive intelligence profile.
           </p>
         </div>
 

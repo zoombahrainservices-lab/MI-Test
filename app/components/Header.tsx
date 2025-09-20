@@ -24,8 +24,8 @@ export default function Header() {
           {/* Left side - Logo/Title */}
           <div className="flex items-center">
             <Link href="/" className="text-lg sm:text-xl font-bold text-gray-800 hover:text-blue-600 transition duration-200">
-              <span className="hidden sm:inline">Multiple Intelligence Test</span>
-              <span className="sm:hidden">MI Test</span>
+              <span className="hidden sm:inline">MindMatrix</span>
+              <span className="sm:hidden">MindMatrix</span>
             </Link>
           </div>
 

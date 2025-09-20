@@ -113,7 +113,7 @@ export default function AdminDashboard() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Welcome back, {user?.email}. Here's what's happening with your Multiple Intelligence Test platform.
+          Welcome back, {user?.email}. Here's what's happening with your MindMatrix platform.
         </p>
       </div>
 
