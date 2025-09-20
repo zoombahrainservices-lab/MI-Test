@@ -4,7 +4,7 @@ A modern, responsive web application built with Next.js, TypeScript, and Tailwin
 
 ## Features
 
-- **Comprehensive Assessment**: 24 carefully crafted questions covering all 8 intelligence types
+- **Comprehensive Assessment**: 30 carefully crafted questions covering all 9 intelligence types
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
 - **Real-time Progress**: Visual progress tracking during the test
 - **Instant Results**: Immediate personalized results with detailed insights
@@ -15,12 +15,13 @@ A modern, responsive web application built with Next.js, TypeScript, and Tailwin
 
 1. **Linguistic Intelligence** - Word smart
 2. **Logical-Mathematical Intelligence** - Number smart  
-3. **Spatial Intelligence** - Picture smart
-4. **Musical Intelligence** - Music smart
-5. **Bodily-Kinesthetic Intelligence** - Body smart
-6. **Interpersonal Intelligence** - People smart
-7. **Intrapersonal Intelligence** - Self smart
-8. **Naturalist Intelligence** - Nature smart
+3. **Musical & Creative Intelligence** - Creative smart
+4. **Bodily-Kinesthetic Intelligence** - Body smart
+5. **Interpersonal Intelligence** - People smart
+6. **Intrapersonal Intelligence** - Self smart
+7. **Naturalistic Intelligence** - Nature smart
+8. **Existential/Spiritual Intelligence** - Spiritual smart
+9. **Leadership & Social Influence** - Leader smart
 
 ## Getting Started
 

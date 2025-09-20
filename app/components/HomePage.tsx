@@ -94,7 +94,7 @@ export default function HomePage() {
       {/* Intelligence Types Preview */}
       <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-12 sm:mb-16 mx-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
-          The 8 Types of Intelligence
+          The 9 Types of Intelligence
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="text-center p-3 sm:p-4">
@@ -109,13 +109,8 @@ export default function HomePage() {
           </div>
           <div className="text-center p-3 sm:p-4">
             <div className="text-2xl sm:text-3xl mb-2">🎨</div>
-            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Spatial</h4>
-            <p className="text-xs sm:text-sm text-gray-600">Picture smart</p>
-          </div>
-          <div className="text-center p-3 sm:p-4">
-            <div className="text-2xl sm:text-3xl mb-2">🎵</div>
-            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Musical</h4>
-            <p className="text-xs sm:text-sm text-gray-600">Music smart</p>
+            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Musical & Creative</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Creative smart</p>
           </div>
           <div className="text-center p-3 sm:p-4">
             <div className="text-2xl sm:text-3xl mb-2">🏃</div>
@@ -134,8 +129,18 @@ export default function HomePage() {
           </div>
           <div className="text-center p-3 sm:p-4">
             <div className="text-2xl sm:text-3xl mb-2">🌿</div>
-            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Naturalist</h4>
+            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Naturalistic</h4>
             <p className="text-xs sm:text-sm text-gray-600">Nature smart</p>
+          </div>
+          <div className="text-center p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl mb-2">🕊️</div>
+            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Existential/Spiritual</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Spiritual smart</p>
+          </div>
+          <div className="text-center p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl mb-2">👑</div>
+            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Leadership & Social Influence</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Leader smart</p>
           </div>
         </div>
       </div>
