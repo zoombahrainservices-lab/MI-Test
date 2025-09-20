@@ -1,42 +1,35 @@
-import { TestResult, TimingData } from '../discover/page'
+import { TestResult } from '../discover/page'
 
 interface TestResultsProps {
-  easyResults: TestResult[]
-  mediumResults: TestResult[]
-  hardResults: TestResult[]
-  timingData?: TimingData | null
+  results: TestResult[]
+  level: string
+  onMoveToNextLevel: () => void
   onRestartTest: () => void
+  showNextLevel: boolean
+  showPrint: boolean
+  timing: any
+  getIntelligenceDescription: (category: string) => string
 }
 
-export default function TestResults({ easyResults, mediumResults, hardResults, timingData, onRestartTest }: TestResultsProps) {
-  // Calculate combined results (average of easy, medium, and hard)
-  const combinedResults = easyResults.map((easyResult, index) => {
-    const mediumResult = mediumResults[index]
-    const hardResult = hardResults[index]
-    const averagePercentage = Math.round((easyResult.percentage + mediumResult.percentage + hardResult.percentage) / 3)
-    return {
-      ...easyResult,
-      percentage: averagePercentage,
-      easyPercentage: easyResult.percentage,
-      mediumPercentage: mediumResult.percentage,
-      hardPercentage: hardResult.percentage
-    }
-  }).sort((a, b) => b.percentage - a.percentage)
+export default function TestResults({ results, level, onMoveToNextLevel, onRestartTest, showNextLevel, showPrint, timing, getIntelligenceDescription }: TestResultsProps) {
+  // Sort results by percentage
+  const sortedResults = [...results].sort((a, b) => b.percentage - a.percentage)
 
-  const topResult = combinedResults[0]
-  const secondResult = combinedResults[1]
-  const thirdResult = combinedResults[2]
+  const topResult = sortedResults[0]
+  const secondResult = sortedResults[1]
+  const thirdResult = sortedResults[2]
 
   const getIntelligenceIcon = (category: string) => {
     const icons = {
       'Linguistic': '📚',
       'Logical-Mathematical': '🔢',
-      'Spatial': '🎨',
-      'Musical': '🎵',
+      'Musical & Creative': '🎨',
       'Bodily-Kinesthetic': '🏃',
       'Interpersonal': '👥',
       'Intrapersonal': '🧠',
-      'Naturalist': '🌿'
+      'Naturalistic': '🌿',
+      'Existential/Spiritual': '🕊️',
+      'Spatial': '🧩'
     }
     return icons[category as keyof typeof icons] || '💡'
   }
@@ -45,12 +38,13 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
     const colors = {
       'Linguistic': 'from-blue-500 to-blue-600',
       'Logical-Mathematical': 'from-purple-500 to-purple-600',
-      'Spatial': 'from-pink-500 to-pink-600',
-      'Musical': 'from-yellow-500 to-yellow-600',
+      'Musical & Creative': 'from-pink-500 to-pink-600',
       'Bodily-Kinesthetic': 'from-green-500 to-green-600',
       'Interpersonal': 'from-indigo-500 to-indigo-600',
       'Intrapersonal': 'from-red-500 to-red-600',
-      'Naturalist': 'from-emerald-500 to-emerald-600'
+      'Naturalistic': 'from-emerald-500 to-emerald-600',
+      'Existential/Spiritual': 'from-violet-500 to-violet-600',
+      'Spatial': 'from-orange-500 to-orange-600'
     }
     return colors[category as keyof typeof colors] || 'from-gray-500 to-gray-600'
   }
@@ -69,11 +63,11 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
           <div className="flex items-center justify-center mb-4">
             <span className="text-4xl mr-3">📊</span>
             <h2 className="text-3xl font-bold text-gray-800">
-              Complete Multiple Intelligence Results
+              Your Multiple Intelligence Results
             </h2>
           </div>
           <p className="text-lg text-gray-600">
-            Congratulations! You've completed all three difficulty levels. Here's your comprehensive intelligence profile combining Easy, Medium, and Hard levels.
+            Congratulations! You've completed the Multiple Intelligence Test. Here's your comprehensive intelligence profile.
           </p>
         </div>
 
@@ -85,7 +79,7 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
             <div className="text-2xl mb-2">{getIntelligenceIcon(topResult.category)}</div>
             <h3 className="text-xl font-bold text-yellow-800 mb-2">{topResult.category}</h3>
             <div className="text-3xl font-bold text-yellow-600 mb-2">{topResult.percentage}%</div>
-            <p className="text-sm text-yellow-700">{topResult.description}</p>
+            <p className="text-sm text-yellow-700">{getIntelligenceDescription(topResult.category)}</p>
           </div>
 
           {/* Second Place */}
@@ -94,7 +88,7 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
             <div className="text-2xl mb-2">{getIntelligenceIcon(secondResult.category)}</div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">{secondResult.category}</h3>
             <div className="text-3xl font-bold text-gray-600 mb-2">{secondResult.percentage}%</div>
-            <p className="text-sm text-gray-700">{secondResult.description}</p>
+            <p className="text-sm text-gray-700">{getIntelligenceDescription(secondResult.category)}</p>
           </div>
 
           {/* Third Place */}
@@ -103,15 +97,15 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
             <div className="text-2xl mb-2">{getIntelligenceIcon(thirdResult.category)}</div>
             <h3 className="text-xl font-bold text-orange-800 mb-2">{thirdResult.category}</h3>
             <div className="text-3xl font-bold text-orange-600 mb-2">{thirdResult.percentage}%</div>
-            <p className="text-sm text-orange-700">{thirdResult.description}</p>
+            <p className="text-sm text-orange-700">{getIntelligenceDescription(thirdResult.category)}</p>
           </div>
         </div>
 
         {/* All Results */}
         <div className="mb-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Combined Intelligence Profile (Easy + Medium + Hard)</h3>
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Your Complete Intelligence Profile</h3>
           <div className="space-y-4">
-            {combinedResults.map((result, index) => (
+            {sortedResults.map((result, index) => (
               <div key={result.category} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
@@ -120,9 +114,6 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-gray-600">{result.percentage}%</div>
-                    <div className="text-xs text-gray-500">
-                      Easy: {result.easyPercentage}% | Medium: {result.mediumPercentage}% | Hard: {result.hardPercentage}%
-                    </div>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
@@ -131,170 +122,12 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
                     style={{ width: `${result.percentage}%` }}
                   ></div>
                 </div>
-                <div className="flex space-x-2 mb-2">
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-1">Easy Level</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${result.easyPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-1">Medium Level</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-yellow-500 h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${result.mediumPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-1">Hard Level</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-red-500 h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${result.hardPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">{result.description}</p>
+                <p className="text-sm text-gray-600">{getIntelligenceDescription(result.category)}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Level Comparison */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
-          <h3 className="text-xl font-bold text-blue-800 mb-4">Difficulty Level Comparison</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-4">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">🟢</span>
-                <h4 className="text-lg font-semibold text-green-800">Easy Level Performance</h4>
-              </div>
-              <div className="space-y-2">
-                {easyResults.slice(0, 3).map((result, index) => (
-                  <div key={result.category} className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">{result.category}</span>
-                    <span className="text-sm font-bold text-green-600">{result.percentage}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">🟡</span>
-                <h4 className="text-lg font-semibold text-yellow-800">Medium Level Performance</h4>
-              </div>
-              <div className="space-y-2">
-                {mediumResults.slice(0, 3).map((result, index) => (
-                  <div key={result.category} className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">{result.category}</span>
-                    <span className="text-sm font-bold text-yellow-600">{result.percentage}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4">
-              <div className="flex items-center mb-3">
-                <span className="text-2xl mr-2">🔴</span>
-                <h4 className="text-lg font-semibold text-red-800">Hard Level Performance</h4>
-              </div>
-              <div className="space-y-2">
-                {hardResults.slice(0, 3).map((result, index) => (
-                  <div key={result.category} className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">{result.category}</span>
-                    <span className="text-sm font-bold text-red-600">{result.percentage}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Timing Data */}
-        {timingData && (
-          <div className="bg-green-50 border-l-4 border-green-400 p-6 mb-8">
-            <h3 className="text-xl font-bold text-green-800 mb-4">Test Performance</h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">{formatTime(timingData.totalTime)}</div>
-                <div className="text-sm text-green-700">Total Time</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">{formatTime(timingData.averageTimePerQuestion)}</div>
-                <div className="text-sm text-green-700">Average per Question</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">{Object.keys(timingData.questionTimes).length}</div>
-                <div className="text-sm text-green-700">Questions Completed</div>
-              </div>
-            </div>
-            
-            {/* Level-wise Timing */}
-            <div className="mt-6">
-              <h4 className="text-lg font-semibold text-green-800 mb-3">Time per Difficulty Level</h4>
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* Easy Level */}
-                <div className="bg-white rounded-lg p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <span className="text-2xl mr-2">🟢</span>
-                    <h5 className="text-lg font-semibold text-green-800">Easy Level</h5>
-                  </div>
-                  <div className="text-2xl font-bold text-green-600 mb-1">
-                    {timingData.easyTime ? formatTime(timingData.easyTime) : '0:00'} / 10:00
-                  </div>
-                  <div className="text-sm text-gray-600">10 questions × 60s each</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${timingData.easyTime ? Math.min((timingData.easyTime / 600) * 100, 100) : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Medium Level */}
-                <div className="bg-white rounded-lg p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <span className="text-2xl mr-2">🟡</span>
-                    <h5 className="text-lg font-semibold text-yellow-800">Medium Level</h5>
-                  </div>
-                  <div className="text-2xl font-bold text-yellow-600 mb-1">
-                    {timingData.mediumTime ? formatTime(timingData.mediumTime) : '0:00'} / 5:00
-                  </div>
-                  <div className="text-sm text-gray-600">10 questions × 30s each</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-yellow-500 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${timingData.mediumTime ? Math.min((timingData.mediumTime / 300) * 100, 100) : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Hard Level */}
-                <div className="bg-white rounded-lg p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <span className="text-2xl mr-2">🔴</span>
-                    <h5 className="text-lg font-semibold text-red-800">Hard Level</h5>
-                  </div>
-                  <div className="text-2xl font-bold text-red-600 mb-1">
-                    {timingData.hardTime ? formatTime(timingData.hardTime) : '0:00'} / 2:30
-                  </div>
-                  <div className="text-sm text-gray-600">10 questions × 15s each</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full transition-all duration-1000"
-                      style={{ width: `${timingData.hardTime ? Math.min((timingData.hardTime / 150) * 100, 100) : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Insights */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
@@ -315,12 +148,22 @@ export default function TestResults({ easyResults, mediumResults, hardResults, t
           >
             Take Test Again
           </button>
-          <button
-            onClick={() => window.print()}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Print Results
-          </button>
+          {showPrint && (
+            <button
+              onClick={() => window.print()}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Print Results
+            </button>
+          )}
+          {showNextLevel && (
+            <button
+              onClick={onMoveToNextLevel}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Move to Next Level
+            </button>
+          )}
         </div>
       </div>
     </div>
