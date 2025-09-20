@@ -11,24 +11,32 @@ export default function ClearAuth() {
     // Force clear all authentication data
     console.log('Force clearing all authentication data...')
     
-    // Clear localStorage
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    // Clear ALL localStorage (not just specific items)
+    localStorage.clear()
+    
+    // Clear ALL sessionStorage
+    sessionStorage.clear()
     
     // Clear all cookies
     document.cookie.split(";").forEach(function(c) { 
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     })
     
-    // Clear sessionStorage
-    sessionStorage.clear()
+    // Clear IndexedDB if it exists
+    if ('indexedDB' in window) {
+      try {
+        indexedDB.deleteDatabase('keyval-store')
+      } catch (e) {
+        // Ignore errors
+      }
+    }
     
-    console.log('Authentication data cleared successfully')
+    console.log('All authentication data cleared successfully')
     setCleared(true)
     
     // Redirect to login after 2 seconds
     setTimeout(() => {
-      router.push('/login')
+      window.location.href = '/login' // Use window.location.href for hard redirect
     }, 2000)
   }, [router])
 

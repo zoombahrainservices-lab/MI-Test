@@ -27,41 +27,72 @@ export function useAuth() {
 
       console.log('useAuth checkAuth - Token:', token ? 'Found' : 'Not found')
       console.log('useAuth checkAuth - Token length:', token ? token.length : 0)
-      console.log('useAuth checkAuth - User data:', userData ? 'Found' : 'Not found')
 
-      // Check if token is valid JWT format (should be 200+ characters)
-      if (token && token.length < 100) {
-        console.log('useAuth checkAuth - Invalid token format, clearing auth data')
+      // Clear any invalid tokens immediately
+      if (token && (token.length < 100 || !token.startsWith('eyJ'))) {
+        console.log('useAuth checkAuth - Invalid token format detected, clearing immediately')
         clearAuthData()
+        setUser(null)
+        setIsAuthenticated(false)
+        setLoading(false)
+        setAuthChecked(true)
         return
       }
 
-      if (token && userData) {
+      // Clear any invalid user data
+      if (userData) {
         try {
           const parsedUser = JSON.parse(userData)
-          console.log('useAuth checkAuth - Parsed user:', parsedUser)
-          
-          // For now, just check if we have valid data - skip server verification to break the loop
+          if (!parsedUser || !parsedUser.id || !parsedUser.email) {
+            console.log('useAuth checkAuth - Invalid user data, clearing immediately')
+            clearAuthData()
+            setUser(null)
+            setIsAuthenticated(false)
+            setLoading(false)
+            setAuthChecked(true)
+            return
+          }
+        } catch (parseError) {
+          console.log('useAuth checkAuth - Error parsing user data, clearing immediately')
+          clearAuthData()
+          setUser(null)
+          setIsAuthenticated(false)
+          setLoading(false)
+          setAuthChecked(true)
+          return
+        }
+      }
+
+      // Only proceed if we have valid token and user data
+      if (token && userData && token.length >= 100 && token.startsWith('eyJ')) {
+        try {
+          const parsedUser = JSON.parse(userData)
           if (parsedUser && parsedUser.id && parsedUser.email) {
             setUser(parsedUser)
             setIsAuthenticated(true)
-            console.log('useAuth checkAuth - User authenticated locally')
+            console.log('useAuth checkAuth - Valid authentication found')
           } else {
-            console.log('useAuth checkAuth - Invalid user data, clearing auth data')
+            console.log('useAuth checkAuth - Invalid user structure, clearing')
             clearAuthData()
+            setUser(null)
+            setIsAuthenticated(false)
           }
         } catch (parseError) {
           console.error('Error parsing user data:', parseError)
           clearAuthData()
+          setUser(null)
+          setIsAuthenticated(false)
         }
       } else {
-        console.log('useAuth checkAuth - No token or user data, setting unauthenticated')
+        console.log('useAuth checkAuth - No valid authentication data')
         setUser(null)
         setIsAuthenticated(false)
       }
     } catch (error) {
       console.error('Error checking auth:', error)
       clearAuthData()
+      setUser(null)
+      setIsAuthenticated(false)
     } finally {
       setLoading(false)
       setAuthChecked(true)

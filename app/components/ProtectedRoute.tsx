@@ -18,6 +18,9 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
     if (!loading && !isAuthenticated && !redirecting) {
       setRedirecting(true)
       console.log('ProtectedRoute: User not authenticated, redirecting to login')
+      // Clear any invalid data before redirecting
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       router.push('/login')
     }
   }, [isAuthenticated, loading, router, redirecting])

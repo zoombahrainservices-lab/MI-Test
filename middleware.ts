@@ -7,9 +7,12 @@ export function middleware(request: NextRequest) {
   // Get the token from cookies
   const token = request.cookies.get('token')?.value
 
+  // Check if token is valid format (JWT should be 200+ characters and start with 'eyJ')
+  const isValidToken = token && token.length >= 100 && token.startsWith('eyJ')
+
   // Protected routes that require authentication
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/discover')) {
-    if (!token) {
+    if (!isValidToken) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
@@ -17,8 +20,8 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/signup pages
-  if (token && (pathname === '/login' || pathname === '/signup')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (isValidToken && (pathname === '/login' || pathname === '/signup')) {
+    return NextResponse.redirect(new URL('/discover', request.url))
   }
 
   return NextResponse.next()
