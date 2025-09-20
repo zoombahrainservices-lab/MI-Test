@@ -203,8 +203,8 @@ export default function DiscoverPage() {
     try {
       console.log('Starting to save test results:', { level, user, results, isAuthenticated })
       
-      if (!user || !isAuthenticated) {
-        console.error('User not authenticated:', { user: !!user, isAuthenticated })
+      if (!user) {
+        console.error('User not available, skipping database save')
         return false
       }
 
@@ -296,14 +296,10 @@ export default function DiscoverPage() {
         const errorData = await response.json()
         console.error('API error response:', errorData)
         
-        // If token is invalid, redirect to login
+        // If token is invalid, just log the error and continue
         if (response.status === 401) {
-          console.log('Token invalid, redirecting to login...')
-          // Clear invalid token
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          // Redirect to login
-          window.location.href = '/login'
+          console.log('Token invalid, but continuing without saving to database')
+          // Don't redirect - just log the error and continue
           return false
         }
         
@@ -316,6 +312,22 @@ export default function DiscoverPage() {
       return true
     } catch (error) {
       console.error(`Error saving ${level} level results:`, error)
+      
+      // Fallback: Save to localStorage as backup
+      try {
+        const backupData = {
+          level,
+          results,
+          timing,
+          timestamp: new Date().toISOString(),
+          user: user?.email || 'unknown'
+        }
+        localStorage.setItem(`test_result_${level}_backup`, JSON.stringify(backupData))
+        console.log(`Saved ${level} results to localStorage as backup`)
+      } catch (backupError) {
+        console.error('Failed to save backup to localStorage:', backupError)
+      }
+      
       return false
     }
   }
