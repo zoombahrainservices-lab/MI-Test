@@ -35,7 +35,7 @@ export interface TimingData {
 }
 
 export default function DiscoverPage() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, user } = useAuth()
   const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'medium-results' | 'results'>('intro')
   const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [answers, setAnswers] = useState<Record<number, number>>({})
@@ -201,6 +201,8 @@ export default function DiscoverPage() {
 
   const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
     try {
+      console.log('Starting to save test results:', { level, user, results })
+      
       if (!user) {
         console.error('User not authenticated')
         return false
@@ -233,34 +235,50 @@ export default function DiscoverPage() {
       const secondIntelligence = results[1]?.category || 'Logical-Mathematical'
       const thirdIntelligence = results[2]?.category || 'Spatial'
 
+      // Convert answers to the expected format
+      const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId: parseInt(questionId),
+        answer: answer
+      }))
+
       // Add level and timing information to answers
       const answersWithMetadata = {
-        ...answers,
+        answers: answersArray,
         level: level,
         timing: timing,
         completedAt: new Date().toISOString()
       }
 
+      const requestData = {
+        answers: answersWithMetadata,
+        scores,
+        percentages,
+        topIntelligence,
+        secondIntelligence,
+        thirdIntelligence
+      }
+      
+      console.log('Sending request to API:', requestData)
+      
       const response = await fetch('/api/test-results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          answers: answersWithMetadata,
-          scores,
-          percentages,
-          topIntelligence,
-          secondIntelligence,
-          thirdIntelligence
-        })
+        body: JSON.stringify(requestData)
       })
 
+      console.log('API response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error('Failed to save test result')
+        const errorData = await response.json()
+        console.error('API error response:', errorData)
+        throw new Error(`Failed to save test result: ${errorData.error || 'Unknown error'}`)
       }
 
+      const responseData = await response.json()
+      console.log('API success response:', responseData)
       console.log(`${level} level results saved successfully`)
       return true
     } catch (error) {

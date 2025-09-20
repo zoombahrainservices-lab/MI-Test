@@ -4,8 +4,11 @@ import { verifyToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Test results API called')
+    
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No authorization header found')
       return NextResponse.json(
         { error: 'Authorization token required' },
         { status: 401 }
@@ -13,24 +16,33 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
+    console.log('Token found, verifying...')
     const user = verifyToken(token)
     if (!user) {
+      console.log('Token verification failed')
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
       )
     }
 
-    const { answers, scores, percentages, topIntelligence, secondIntelligence, thirdIntelligence } = await request.json()
+    console.log('User verified:', user)
+    const requestBody = await request.json()
+    console.log('Request body received:', requestBody)
+    
+    const { answers, scores, percentages, topIntelligence, secondIntelligence, thirdIntelligence } = requestBody
 
     // Validate input
     if (!answers || !scores || !percentages) {
+      console.log('Validation failed - missing required data:', { answers: !!answers, scores: !!scores, percentages: !!percentages })
       return NextResponse.json(
         { error: 'Test data is required' },
         { status: 400 }
       )
     }
 
+    console.log('Validation passed, saving test result...')
+    
     // Save test result
     const testResult = await saveTestResult({
       userId: user.id,
@@ -41,6 +53,8 @@ export async function POST(request: NextRequest) {
       secondIntelligence,
       thirdIntelligence,
     })
+
+    console.log('Test result saved successfully:', testResult)
 
     // Update analytics
     await updateAnalytics()
