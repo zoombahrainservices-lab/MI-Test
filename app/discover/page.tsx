@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import ProtectedRoute from '../components/ProtectedRoute'
+import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
 import TestResults from '../components/TestResults'
@@ -28,28 +29,17 @@ interface TestResult {
   percentage: number
 }
 
-interface TimingData {
-  totalTime: number
-  questionTimes: Record<number, number>
-}
 
 export default function DiscoverPage() {
   const { isAuthenticated, loading, user } = useAuth()
-  const [currentStep, setCurrentStep] = useState<'intro' | 'gender' | 'easy' | 'easy-results' | 'medium' | 'medium-results' | 'hard' | 'results'>('intro')
-  const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium' | 'hard'>('easy')
+  const [currentStep, setCurrentStep] = useState<'intro' | 'gender' | 'test' | 'results'>('intro')
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
-  const [easyAnswers, setEasyAnswers] = useState<Record<number, number>>({})
-  const [mediumAnswers, setMediumAnswers] = useState<Record<number, number>>({})
-  const [hardAnswers, setHardAnswers] = useState<Record<number, number>>({})
-  const [easyTestResults, setEasyTestResults] = useState<TestResult[]>([])
-  const [mediumTestResults, setMediumTestResults] = useState<TestResult[]>([])
-  const [hardTestResults, setHardTestResults] = useState<TestResult[]>([])
-  const [timing, setTiming] = useState<TimingData>({ totalTime: 0, questionTimes: {} })
+  const [testResults, setTestResults] = useState<TestResult[]>([])
   const [saving, setSaving] = useState(false)
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
 
-  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData) => {
+  const saveTestResultToDatabase = async (results: TestResult[]) => {
     if (!user) {
       console.error('No user found for saving test results')
       return
@@ -110,8 +100,7 @@ export default function DiscoverPage() {
           topIntelligence,
           secondIntelligence,
           thirdIntelligence,
-          level,
-          timing
+          level: 'combined'
         })
       })
 
@@ -119,7 +108,7 @@ export default function DiscoverPage() {
         throw new Error(`Failed to save test results: ${response.statusText}`)
       }
 
-      console.log(`Test results saved for ${level} level:`, await response.json())
+      console.log(`Test results saved:`, await response.json())
     } catch (error) {
       console.error('Error saving test results:', error)
     } finally {
@@ -128,101 +117,54 @@ export default function DiscoverPage() {
   }
 
   const questions: Question[] = [
-    // EASY QUESTIONS (1-10)
     // Linguistic Intelligence
     { id: 1, text: "I enjoy expressing my ideas clearly in writing or speech", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 2, text: "I pay attention to the words I use to ensure they are accurate", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 3, text: "I am motivated to persuade or inspire others through language", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 4, text: "I enjoy reading or learning new ways to communicate effectively", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Logical-Mathematical Intelligence
-    { id: 2, text: "I enjoy identifying patterns and predicting outcomes before taking action", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 5, text: "I enjoy identifying patterns and predicting outcomes before taking action", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 6, text: "I like breaking problems into smaller steps to find the best solution", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 7, text: "I often analyze situations from multiple angles before making decisions", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Musical & Creative Intelligence
-    { id: 3, text: "I feel inspired when surrounded by art, music, or design", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 8, text: "I feel inspired when surrounded by art, music, or design", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 9, text: "I often find new ways to approach a task or challenge creatively", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 10, text: "I draw inspiration from emotions or life experiences for my creative work", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Bodily-Kinesthetic Intelligence
-    { id: 4, text: "I feel comfortable learning by doing rather than only observing", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 11, text: "I feel comfortable learning by doing rather than only observing", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 12, text: "I often use physical activity to think through ideas or problems", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 13, text: "I am skilled at adapting my actions to achieve practical results", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Interpersonal Intelligence
-    { id: 5, text: "I notice when someone is feeling upset even if they do not say anything", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 14, text: "I notice when someone is feeling upset even if they do not say anything", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 15, text: "I enjoy helping people resolve their conflicts or misunderstandings", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 16, text: "I naturally create harmony in groups by listening to everyone's perspective", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Intrapersonal Intelligence
-    { id: 6, text: "I often reflect on my thoughts and emotions to understand myself better", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 17, text: "I often reflect on my thoughts and emotions to understand myself better", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 18, text: "I prefer setting personal goals and working independently to achieve them", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 19, text: "I make decisions based on my values and long-term priorities", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Naturalistic Intelligence
-    { id: 7, text: "I enjoy exploring nature and discovering new environments", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 20, text: "I enjoy exploring nature and discovering new environments", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 21, text: "I am curious about how natural systems and living things interact", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 22, text: "I often notice details in my environment that others might miss", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Existential/Spiritual Intelligence
-    { id: 8, text: "I reflect on the meaning of my actions and their impact on others", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 23, text: "I reflect on the meaning of my actions and their impact on others", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 24, text: "I feel strongly about fairness, justice, and ethical decisions", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 25, text: "I value inner peace and try to create calm in my surroundings", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Spatial Intelligence
-    { id: 9, text: "I can easily visualize objects in 3D", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Additional question for better coverage
-    { id: 10, text: "I pay attention to the words I use to ensure they are accurate", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-
-    // MEDIUM QUESTIONS (11-20)
-    // Linguistic Intelligence - Medium
-    { id: 11, text: "I am motivated to persuade or inspire others through language", category: "Linguistic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Logical-Mathematical Intelligence - Medium
-    { id: 12, text: "I like breaking problems into smaller steps to find the best solution", category: "Logical-Mathematical", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Musical & Creative Intelligence - Medium
-    { id: 13, text: "I often find new ways to approach a task or challenge creatively", category: "Musical & Creative", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Bodily-Kinesthetic Intelligence - Medium
-    { id: 14, text: "I often use physical activity to think through ideas or problems", category: "Bodily-Kinesthetic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Interpersonal Intelligence - Medium
-    { id: 15, text: "I enjoy helping people resolve their conflicts or misunderstandings", category: "Interpersonal", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Intrapersonal Intelligence - Medium
-    { id: 16, text: "I prefer setting personal goals and working independently to achieve them", category: "Intrapersonal", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Naturalistic Intelligence - Medium
-    { id: 17, text: "I am curious about how natural systems and living things interact", category: "Naturalistic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Existential/Spiritual Intelligence - Medium
-    { id: 18, text: "I feel strongly about fairness, justice, and ethical decisions", category: "Existential/Spiritual", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Spatial Intelligence - Medium
-    { id: 19, text: "I can mentally rotate and manipulate 3D objects to solve spatial problems", category: "Spatial", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Additional question for better coverage
-    { id: 20, text: "I enjoy reading or learning new ways to communicate effectively", category: "Linguistic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-
-    // HARD QUESTIONS (21-30)
-    // Linguistic Intelligence - Hard
-    { id: 21, text: "I feel confident when I can explain complex ideas simply", category: "Linguistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Logical-Mathematical Intelligence - Hard
-    { id: 22, text: "I often analyze situations from multiple angles before making decisions", category: "Logical-Mathematical", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Musical & Creative Intelligence - Hard
-    { id: 23, text: "I draw inspiration from emotions or life experiences for my creative work", category: "Musical & Creative", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Bodily-Kinesthetic Intelligence - Hard
-    { id: 24, text: "I am skilled at adapting my actions to achieve practical results", category: "Bodily-Kinesthetic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Interpersonal Intelligence - Hard
-    { id: 25, text: "I naturally create harmony in groups by listening to everyone's perspective", category: "Interpersonal", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Intrapersonal Intelligence - Hard
-    { id: 26, text: "I make decisions based on my values and long-term priorities", category: "Intrapersonal", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Naturalistic Intelligence - Hard
-    { id: 27, text: "I often notice details in my environment that others might miss", category: "Naturalistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Existential/Spiritual Intelligence - Hard
-    { id: 28, text: "I value inner peace and try to create calm in my surroundings", category: "Existential/Spiritual", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Spatial Intelligence - Hard
-    { id: 29, text: "I can mentally manipulate complex 3D structures and predict how they would behave under various conditions", category: "Spatial", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Additional question for better coverage
-    { id: 30, text: "I notice grammatical or logical inconsistencies in written or spoken information", category: "Linguistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] }
+    { id: 26, text: "I can easily visualize objects in 3D", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 27, text: "I can mentally rotate and manipulate 3D objects to solve spatial problems", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    { id: 28, text: "I can mentally manipulate complex 3D structures and predict how they would behave under various conditions", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] }
   ]
 
-  const calculateResults = (answers: Record<number, number>, difficulty: 'easy' | 'medium' | 'hard') => {
+  const calculateResults = (answers: Record<number, number>) => {
     const categoryScores: Record<string, number> = {}
     const categoryCounts: Record<string, number> = {}
 
@@ -246,7 +188,7 @@ export default function DiscoverPage() {
 
     // Calculate scores
     Object.entries(answers).forEach(([questionId, answer]) => {
-      const question = questions.find(q => q.id === parseInt(questionId) && q.difficulty === difficulty)
+      const question = questions.find(q => q.id === parseInt(questionId))
       if (question) {
         categoryScores[question.category] += answer + 1 // Convert 0-4 to 1-5
         categoryCounts[question.category] += 1
@@ -271,7 +213,7 @@ export default function DiscoverPage() {
   }
 
   const getCurrentQuestions = () => {
-    return questions.filter(q => q.difficulty === currentLevel)
+    return questions
   }
 
   const handleStartTest = () => {
@@ -280,11 +222,9 @@ export default function DiscoverPage() {
 
   const handleGenderSelect = (selectedGender: 'male' | 'female') => {
     setGender(selectedGender)
-    setCurrentStep('easy')
-    setCurrentLevel('easy')
+    setCurrentStep('test')
     setCurrentQuestionIndex(0)
     setAnswers({})
-    setTiming({ totalTime: 0, questionTimes: {} })
   }
 
   const handleNextQuestion = (answer: number) => {
@@ -306,55 +246,17 @@ export default function DiscoverPage() {
   }
 
   const handleSubmitTest = async () => {
-    const currentQuestions = getCurrentQuestions()
-    const results = calculateResults(answers, currentLevel)
-    
-    if (currentLevel === 'easy') {
-      setEasyTestResults(results)
-      setEasyAnswers({ ...answers })
-      await saveTestResultToDatabase(results, 'easy', timing)
-      setCurrentStep('easy-results')
-    } else if (currentLevel === 'medium') {
-      setMediumTestResults(results)
-      setMediumAnswers({ ...answers })
-      await saveTestResultToDatabase(results, 'medium', timing)
-      setCurrentStep('medium-results')
-    } else if (currentLevel === 'hard') {
-      setHardTestResults(results)
-      setHardAnswers({ ...answers })
-      await saveTestResultToDatabase(results, 'hard', timing)
-      setCurrentStep('results')
-    }
-  }
-
-  const handleMoveToNextLevel = () => {
-    if (currentLevel === 'easy') {
-      setCurrentLevel('medium')
-      setCurrentStep('medium')
-      setCurrentQuestionIndex(0)
-      setAnswers({})
-      setTiming({ totalTime: 0, questionTimes: {} })
-    } else if (currentLevel === 'medium') {
-      setCurrentLevel('hard')
-      setCurrentStep('hard')
-      setCurrentQuestionIndex(0)
-      setAnswers({})
-      setTiming({ totalTime: 0, questionTimes: {} })
-    }
+    const results = calculateResults(answers)
+    setTestResults(results)
+    await saveTestResultToDatabase(results)
+    setCurrentStep('results')
   }
 
   const handleRestartTest = () => {
     setCurrentStep('intro')
-    setCurrentLevel('easy')
     setCurrentQuestionIndex(0)
     setAnswers({})
-    setEasyAnswers({})
-    setMediumAnswers({})
-    setHardAnswers({})
-    setEasyTestResults([])
-    setMediumTestResults([])
-    setHardTestResults([])
-    setTiming({ totalTime: 0, questionTimes: {} })
+    setTestResults([])
     setGender('')
   }
 
@@ -390,6 +292,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
       {currentStep === 'intro' && (
         <TestIntro onStartTest={handleStartTest} />
       )}
@@ -423,52 +326,23 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {(currentStep === 'easy' || currentStep === 'medium' || currentStep === 'hard') && (
+      {currentStep === 'test' && (
         <TestQuestions
           questions={getCurrentQuestions()}
           currentQuestionIndex={currentQuestionIndex}
           onNextQuestion={handleNextQuestion}
-          difficulty={currentLevel}
-          timing={timing}
-          setTiming={setTiming}
-        />
-      )}
-
-      {currentStep === 'easy-results' && (
-        <TestResults
-          results={easyTestResults}
-          level="Easy"
-          onMoveToNextLevel={handleMoveToNextLevel}
-          onRestartTest={handleRestartTest}
-          showNextLevel={true}
-          showPrint={true}
-          timing={timing}
-          getIntelligenceDescription={getIntelligenceDescription}
-        />
-      )}
-
-      {currentStep === 'medium-results' && (
-        <TestResults
-          results={mediumTestResults}
-          level="Medium"
-          onMoveToNextLevel={handleMoveToNextLevel}
-          onRestartTest={handleRestartTest}
-          showNextLevel={true}
-          showPrint={false}
-          timing={timing}
-          getIntelligenceDescription={getIntelligenceDescription}
         />
       )}
 
       {currentStep === 'results' && (
         <TestResults
-          results={hardTestResults}
-          level="Hard"
+          results={testResults}
+          level="Complete"
           onMoveToNextLevel={() => {}}
           onRestartTest={handleRestartTest}
           showNextLevel={false}
-          showPrint={false}
-          timing={timing}
+          showPrint={true}
+          timing={null}
           getIntelligenceDescription={getIntelligenceDescription}
         />
       )}
