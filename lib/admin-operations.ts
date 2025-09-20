@@ -68,10 +68,18 @@ export async function findAdminById(id: string) {
 }
 
 export async function verifyAdminCredentials(email: string, password: string) {
+  console.log(`Verifying admin credentials for: ${email}`)
+  
   const admin = await findAdminByEmail(email)
-  if (!admin) return null
+  if (!admin) {
+    console.log(`Admin not found: ${email}`)
+    return null
+  }
 
+  console.log(`Admin found: ${admin.email}, checking password...`)
   const isValid = await verifyPassword(password, admin.password)
+  console.log(`Password valid: ${isValid}`)
+  
   if (!isValid) return null
 
   return {

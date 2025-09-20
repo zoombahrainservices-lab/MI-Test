@@ -15,11 +15,14 @@ export async function POST(request: NextRequest) {
     const result = await authenticateAdmin(email, password)
     
     if (!result) {
+      console.log(`Admin login failed for email: ${email}`)
       return NextResponse.json(
         { error: 'Invalid admin credentials' },
         { status: 401 }
       )
     }
+
+    console.log(`Admin login successful for: ${email}`)
 
     // Set HTTP-only cookie for admin session
     const response = NextResponse.json({
