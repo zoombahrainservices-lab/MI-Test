@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
@@ -36,6 +36,17 @@ export interface TimingData {
 
 export default function DiscoverPage() {
   const { isAuthenticated, loading, user } = useAuth()
+  
+  // Debug authentication state
+  useEffect(() => {
+    console.log('🔍 Discover Page Auth State:', {
+      isAuthenticated,
+      loading,
+      user,
+      token: localStorage.getItem('token') ? 'Present' : 'Missing',
+      userData: localStorage.getItem('user') ? 'Present' : 'Missing'
+    })
+  }, [isAuthenticated, loading, user])
   const [currentStep, setCurrentStep] = useState<'intro' | 'test' | 'easy-results' | 'medium-results' | 'results'>('intro')
   const [currentLevel, setCurrentLevel] = useState<'easy' | 'medium' | 'hard'>('easy')
   const [answers, setAnswers] = useState<Record<number, number>>({})
@@ -201,11 +212,29 @@ export default function DiscoverPage() {
 
   const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
     try {
-      console.log('Starting to save test results:', { level, user, results, isAuthenticated })
+      console.log('Starting to save test results:', { level, user, results })
       
+      // Check if user is authenticated
       if (!user) {
-        console.error('User not available, skipping database save')
-        return false
+        console.error('User not authenticated - checking localStorage for fallback')
+        
+        // Try to get user data from localStorage as fallback
+        const token = localStorage.getItem('token')
+        const userData = localStorage.getItem('user')
+        
+        if (token && userData) {
+          try {
+            const parsedUser = JSON.parse(userData)
+            console.log('Using fallback user data from localStorage:', parsedUser)
+            user = parsedUser
+          } catch (parseError) {
+            console.error('Failed to parse user data from localStorage:', parseError)
+            return false
+          }
+        } else {
+          console.error('No user data available in localStorage either')
+          return false
+        }
       }
 
       // Convert results to the format expected by the API
@@ -260,25 +289,25 @@ export default function DiscoverPage() {
       
       console.log('Sending request to API:', requestData)
       
+      // Get token and verify it's not expired
       const token = localStorage.getItem('token')
-      const userData = localStorage.getItem('user')
-      console.log('Token from localStorage:', token)
-      console.log('User data from localStorage:', userData)
-      console.log('Current user state:', user)
-      console.log('Current isAuthenticated state:', isAuthenticated)
+      if (!token) {
+        console.error('No token found in localStorage')
+        return false
+      }
       
       // Check if token is expired
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]))
-          const now = Math.floor(Date.now() / 1000)
-          console.log('Token payload:', payload)
-          console.log('Token expires at:', new Date(payload.exp * 1000))
-          console.log('Current time:', new Date(now * 1000))
-          console.log('Token expired:', payload.exp < now)
-        } catch (error) {
-          console.log('Error decoding token:', error)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const now = Math.floor(Date.now() / 1000)
+        if (payload.exp < now) {
+          console.error('Token is expired')
+          return false
         }
+        console.log('Token is valid, expires at:', new Date(payload.exp * 1000))
+      } catch (tokenError) {
+        console.error('Error checking token:', tokenError)
+        return false
       }
       
       const response = await fetch('/api/test-results', {
@@ -295,14 +324,6 @@ export default function DiscoverPage() {
       if (!response.ok) {
         const errorData = await response.json()
         console.error('API error response:', errorData)
-        
-        // If token is invalid, just log the error and continue
-        if (response.status === 401) {
-          console.log('Token invalid, but continuing without saving to database')
-          // Don't redirect - just log the error and continue
-          return false
-        }
-        
         throw new Error(`Failed to save test result: ${errorData.error || 'Unknown error'}`)
       }
 
@@ -312,22 +333,6 @@ export default function DiscoverPage() {
       return true
     } catch (error) {
       console.error(`Error saving ${level} level results:`, error)
-      
-      // Fallback: Save to localStorage as backup
-      try {
-        const backupData = {
-          level,
-          results,
-          timing,
-          timestamp: new Date().toISOString(),
-          user: user?.email || 'unknown'
-        }
-        localStorage.setItem(`test_result_${level}_backup`, JSON.stringify(backupData))
-        console.log(`Saved ${level} results to localStorage as backup`)
-      } catch (backupError) {
-        console.error('Failed to save backup to localStorage:', backupError)
-      }
-      
       return false
     }
   }

@@ -7,21 +7,26 @@ export async function POST(request: NextRequest) {
     console.log('Test results API called')
     
     const authHeader = request.headers.get('authorization')
-    let user = null
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7)
-      console.log('Token found, verifying...', { token: token.substring(0, 20) + '...' })
-      user = verifyToken(token)
-      if (!user) {
-        console.log('Token verification failed - token might be expired or invalid')
-        // Don't return error, just continue without user
-      } else {
-        console.log('User verified:', user)
-      }
-    } else {
-      console.log('No authorization header found - continuing without authentication')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No authorization header found')
+      return NextResponse.json(
+        { error: 'Authorization token required' },
+        { status: 401 }
+      )
     }
+
+    const token = authHeader.substring(7)
+    console.log('Token found, verifying...')
+    const user = verifyToken(token)
+    if (!user) {
+      console.log('Token verification failed')
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+
+    console.log('User verified:', user)
     const requestBody = await request.json()
     console.log('Request body received:', requestBody)
     
@@ -38,12 +43,9 @@ export async function POST(request: NextRequest) {
 
     console.log('Validation passed, saving test result...')
     
-    // Save test result (use a default user ID if no user is authenticated)
-    const userId = user?.id || 'anonymous'
-    console.log('Using user ID:', userId)
-    
+    // Save test result
     const testResult = await saveTestResult({
-      userId: userId,
+      userId: user.id,
       answers,
       scores,
       percentages,
