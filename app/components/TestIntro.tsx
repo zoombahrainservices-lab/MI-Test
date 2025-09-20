@@ -12,7 +12,7 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
             Based on Howard Gardner's theory of multiple intelligences, this test will help you 
-            discover your unique cognitive strengths across eight different areas of intelligence.
+            discover your unique cognitive strengths across nine different areas of intelligence.
           </p>
         </div>
 
@@ -30,11 +30,11 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
         <div className="bg-green-50 p-6 rounded-lg">
           <h3 className="text-xl font-semibold text-green-800 mb-3">Test Details</h3>
           <ul className="space-y-2 text-gray-700">
-            <li>• 30 carefully crafted questions (10 Easy + 10 Medium + 10 Hard)</li>
-            <li>• Progressive timing: Easy (60s), Medium (30s), Hard (15s) per question</li>
-            <li>• Progressive difficulty levels</li>
+            <li>• 28 carefully crafted questions covering all 9 intelligence types</li>
+            <li>• No time pressure - take your time to answer thoughtfully</li>
             <li>• No right or wrong answers</li>
-            <li>• Comprehensive results for all three levels</li>
+            <li>• Comprehensive results showing your intelligence profile</li>
+            <li>• Instant results with detailed insights</li>
           </ul>
         </div>
         </div>
@@ -55,55 +55,75 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
           </div>
         </div>
 
-        <div className="bg-red-50 border-l-4 border-red-400 p-6 mb-8">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">
-                <strong>Timer Warning:</strong> Each question has a time limit! If you run out of time, you'll see a timeout message with options to retry or return home. 
-                The timer gets shorter as difficulty increases: Easy (60s) → Medium (30s) → Hard (15s).
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Progressive Difficulty System */}
+        {/* Intelligence Types Overview */}
         <div className="bg-purple-50 p-6 rounded-lg mb-8">
-          <h3 className="text-lg font-semibold text-purple-800 mb-3">Progressive Difficulty System</h3>
+          <h3 className="text-lg font-semibold text-purple-800 mb-3">The 9 Types of Intelligence</h3>
           <p className="text-gray-600 mb-4">
-            The test follows a progressive structure to provide comprehensive insights:
+            This test evaluates your strengths across all nine intelligence types:
           </p>
-          <div className="space-y-4">
-            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-green-500">
-              <div className="text-2xl mr-3">🟢</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">📚</div>
               <div>
-                <h4 className="font-medium text-gray-800">Level 1: Easy Questions (1-10)</h4>
-                <p className="text-sm text-gray-600">Start with straightforward questions - 60 seconds per question</p>
+                <h4 className="font-medium text-gray-800">Linguistic</h4>
+                <p className="text-sm text-gray-600">Word smart</p>
               </div>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-yellow-500">
-              <div className="text-2xl mr-3">🟡</div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🔢</div>
               <div>
-                <h4 className="font-medium text-gray-800">Level 2: Medium Questions (11-20)</h4>
-                <p className="text-sm text-gray-600">Progress to more complex scenarios - 30 seconds per question</p>
+                <h4 className="font-medium text-gray-800">Logical-Mathematical</h4>
+                <p className="text-sm text-gray-600">Number smart</p>
               </div>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-red-500">
-              <div className="text-2xl mr-3">🔴</div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🎨</div>
               <div>
-                <h4 className="font-medium text-gray-800">Level 3: Hard Questions (21-30)</h4>
-                <p className="text-sm text-gray-600">Tackle the most complex scenarios - 15 seconds per question</p>
+                <h4 className="font-medium text-gray-800">Musical & Creative</h4>
+                <p className="text-sm text-gray-600">Creative smart</p>
               </div>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg border-l-4 border-blue-500">
-              <div className="text-2xl mr-3">📊</div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🏃</div>
               <div>
-                <h4 className="font-medium text-gray-800">Comprehensive Results</h4>
-                <p className="text-sm text-gray-600">Get detailed scores for all three difficulty levels</p>
+                <h4 className="font-medium text-gray-800">Bodily-Kinesthetic</h4>
+                <p className="text-sm text-gray-600">Body smart</p>
+              </div>
+            </div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">👥</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Interpersonal</h4>
+                <p className="text-sm text-gray-600">People smart</p>
+              </div>
+            </div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🧠</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Intrapersonal</h4>
+                <p className="text-sm text-gray-600">Self smart</p>
+              </div>
+            </div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🌿</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Naturalistic</h4>
+                <p className="text-sm text-gray-600">Nature smart</p>
+              </div>
+            </div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🕊️</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Existential/Spiritual</h4>
+                <p className="text-sm text-gray-600">Spiritual smart</p>
+              </div>
+            </div>
+            <div className="flex items-center p-3 bg-white rounded-lg">
+              <div className="text-2xl mr-3">🧩</div>
+              <div>
+                <h4 className="font-medium text-gray-800">Spatial</h4>
+                <p className="text-sm text-gray-600">Picture smart</p>
               </div>
             </div>
           </div>
