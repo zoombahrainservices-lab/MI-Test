@@ -24,11 +24,17 @@ export function useAuth() {
       const token = localStorage.getItem('token')
       const userData = localStorage.getItem('user')
 
+      console.log('useAuth checkAuth - Token:', token ? 'Found' : 'Not found')
+      console.log('useAuth checkAuth - Token length:', token ? token.length : 0)
+      console.log('useAuth checkAuth - User data:', userData ? 'Found' : 'Not found')
+
       if (token && userData) {
         const parsedUser = JSON.parse(userData)
+        console.log('useAuth checkAuth - Parsed user:', parsedUser)
         setUser(parsedUser)
         setIsAuthenticated(true)
       } else {
+        console.log('useAuth checkAuth - No token or user data, setting unauthenticated')
         setUser(null)
         setIsAuthenticated(false)
       }
@@ -68,6 +74,11 @@ export function useAuth() {
     router.push('/login')
   }
 
+  const clearAuth = () => {
+    console.log('Clearing authentication data due to invalid token')
+    logout()
+  }
+
   const requireAuth = () => {
     if (!isAuthenticated && !loading) {
       router.push('/login')
@@ -83,6 +94,7 @@ export function useAuth() {
     login,
     logout,
     requireAuth,
-    checkAuth
+    checkAuth,
+    clearAuth
   }
 }
