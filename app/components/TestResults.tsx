@@ -56,7 +56,7 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto mt-8">
       <div className="bg-white rounded-lg shadow-xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
