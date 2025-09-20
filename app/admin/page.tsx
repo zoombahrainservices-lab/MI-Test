@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../hooks/useAuth'
 
 interface DashboardStats {
@@ -20,6 +21,7 @@ interface RecentTest {
 
 export default function AdminDashboard() {
   const { user } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalTests: 0,
@@ -77,6 +79,26 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'users':
+        router.push('/admin/users')
+        break
+      case 'questions':
+        router.push('/admin/questions')
+        break
+      case 'reports':
+        router.push('/admin/results')
+        break
+      case 'settings':
+        // For now, just show an alert since we don't have a settings page
+        alert('Settings page coming soon!')
+        break
+      default:
+        break
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -98,7 +120,10 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Users */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div 
+          onClick={() => handleQuickAction('users')}
+          className="bg-white overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        >
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -123,7 +148,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Total Tests */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div 
+          onClick={() => handleQuickAction('reports')}
+          className="bg-white overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        >
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -148,7 +176,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Average Score */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div 
+          onClick={() => handleQuickAction('reports')}
+          className="bg-white overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        >
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -173,7 +204,10 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Tests */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div 
+          onClick={() => handleQuickAction('reports')}
+          className="bg-white overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+        >
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -201,7 +235,12 @@ export default function AdminDashboard() {
       {/* Recent Tests Table */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Test Results</h3>
+          <h3 
+            onClick={() => handleQuickAction('reports')}
+            className="text-lg leading-6 font-medium text-gray-900 mb-4 cursor-pointer hover:text-blue-600 transition-colors duration-200"
+          >
+            Recent Test Results
+          </h3>
           <div className="overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -250,19 +289,31 @@ export default function AdminDashboard() {
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <button 
+              onClick={() => handleQuickAction('users')}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+            >
               <span className="mr-2">👥</span>
               View All Users
             </button>
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <button 
+              onClick={() => handleQuickAction('questions')}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+            >
               <span className="mr-2">❓</span>
               Manage Questions
             </button>
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <button 
+              onClick={() => handleQuickAction('reports')}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+            >
               <span className="mr-2">📈</span>
               View Reports
             </button>
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            <button 
+              onClick={() => handleQuickAction('settings')}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
+            >
               <span className="mr-2">⚙️</span>
               Settings
             </button>
