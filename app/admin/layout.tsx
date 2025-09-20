@@ -42,7 +42,7 @@ export default function AdminLayout({
     }
 
     checkAdminAuth()
-  }, [router, pathname])
+  }, [pathname, router])
 
   // Show loading state while checking authentication
   if (loading) {

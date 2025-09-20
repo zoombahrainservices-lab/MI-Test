@@ -44,6 +44,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Admin login error:', error)
+    
+    // Check if it's a database table error
+    if (error.message && error.message.includes('Could not find the table')) {
+      return NextResponse.json(
+        { error: 'Admin table not found. Please contact system administrator.' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

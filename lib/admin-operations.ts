@@ -44,6 +44,9 @@ export async function findAdminByEmail(email: string) {
     .single()
 
   if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+    if (error.code === 'PGRST205') {
+      throw new Error('Admin table does not exist. Please create the admin table in the database.')
+    }
     throw new Error(`Failed to find admin: ${error.message}`)
   }
 
