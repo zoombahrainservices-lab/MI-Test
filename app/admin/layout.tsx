@@ -11,6 +11,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [admin, setAdmin] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -29,11 +30,30 @@ export default function AdminLayout({
         }
       } catch (error) {
         router.push('/admin/login')
+      } finally {
+        setLoading(false)
       }
     }
 
     checkAdminAuth()
   }, [router])
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifying admin access...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render the admin layout if not authenticated
+  if (!admin) {
+    return null
+  }
 
   const handleLogout = async () => {
     try {
