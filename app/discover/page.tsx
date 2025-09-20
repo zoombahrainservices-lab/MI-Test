@@ -60,6 +60,8 @@ export default function DiscoverPage() {
       // Get the token from localStorage
       const token = localStorage.getItem('token')
       console.log('Token from localStorage:', token ? 'Found' : 'Not found')
+      console.log('Token length:', token ? token.length : 0)
+      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'None')
       console.log('User from useAuth:', user)
       
       if (!token) {
@@ -99,6 +101,7 @@ export default function DiscoverPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({
           answers: answers,
           scores,

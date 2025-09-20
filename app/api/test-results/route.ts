@@ -9,28 +9,48 @@ if (!process.env.JWT_SECRET) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+    // Try to get user from session cookies first
+    const userCookie = request.cookies.get('user')?.value
+    const tokenCookie = request.cookies.get('token')?.value
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('No valid authorization header found')
-      return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
-      )
+    console.log('User cookie:', userCookie ? 'Present' : 'Missing')
+    console.log('Token cookie:', tokenCookie ? 'Present' : 'Missing')
+    
+    let user = null
+    
+    // Try session-based authentication first
+    if (userCookie && tokenCookie) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userCookie))
+        const tokenUser = verifyToken(tokenCookie)
+        
+        if (tokenUser && tokenUser.id === userData.id) {
+          user = userData
+          console.log('User authenticated via session cookies')
+        }
+      } catch (error) {
+        console.log('Session cookie authentication failed:', error)
+      }
     }
-
-    const token = authHeader.substring(7)
-    console.log('Token extracted:', token ? 'Present' : 'Missing')
     
-    const user = verifyToken(token)
-    console.log('User from token:', user ? 'Valid' : 'Invalid')
-    console.log('JWT_SECRET available:', process.env.JWT_SECRET ? 'Yes' : 'No')
+    // Fallback to Authorization header
+    if (!user) {
+      const authHeader = request.headers.get('authorization')
+      console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7)
+        console.log('Token extracted:', token ? 'Present' : 'Missing')
+        
+        user = verifyToken(token)
+        console.log('User from token:', user ? 'Valid' : 'Invalid')
+      }
+    }
     
     if (!user) {
-      console.log('Token verification failed. Token:', token.substring(0, 20) + '...')
+      console.log('No valid authentication found')
       return NextResponse.json(
-        { error: 'Invalid token' },
+        { error: 'Authentication required' },
         { status: 401 }
       )
     }
