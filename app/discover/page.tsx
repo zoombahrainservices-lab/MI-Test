@@ -59,6 +59,9 @@ export default function DiscoverPage() {
     try {
       // Get the token from localStorage
       const token = localStorage.getItem('token')
+      console.log('Token from localStorage:', token ? 'Found' : 'Not found')
+      console.log('User from useAuth:', user)
+      
       if (!token) {
         throw new Error('No authentication token found')
       }

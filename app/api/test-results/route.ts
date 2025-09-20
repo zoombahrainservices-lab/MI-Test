@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { saveTestResult, getUserTestResults, updateAnalytics } from '@/lib/db-operations'
 import { verifyToken } from '@/lib/auth'
 
+// Ensure environment variables are loaded
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET environment variable is not set')
+}
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
+    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No valid authorization header found')
       return NextResponse.json(
         { error: 'Authorization token required' },
         { status: 401 }
@@ -13,8 +21,14 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
+    console.log('Token extracted:', token ? 'Present' : 'Missing')
+    
     const user = verifyToken(token)
+    console.log('User from token:', user ? 'Valid' : 'Invalid')
+    console.log('JWT_SECRET available:', process.env.JWT_SECRET ? 'Yes' : 'No')
+    
     if (!user) {
+      console.log('Token verification failed. Token:', token.substring(0, 20) + '...')
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
