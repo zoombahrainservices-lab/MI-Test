@@ -13,13 +13,14 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     checkAuth()
   }, [])
 
-  const checkAuth = () => {
+  const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token')
       const userData = localStorage.getItem('user')
@@ -28,11 +29,31 @@ export function useAuth() {
       console.log('useAuth checkAuth - Token length:', token ? token.length : 0)
       console.log('useAuth checkAuth - User data:', userData ? 'Found' : 'Not found')
 
+      // Check if token is valid JWT format (should be 200+ characters)
+      if (token && token.length < 100) {
+        console.log('useAuth checkAuth - Invalid token format, clearing auth data')
+        clearAuthData()
+        return
+      }
+
       if (token && userData) {
-        const parsedUser = JSON.parse(userData)
-        console.log('useAuth checkAuth - Parsed user:', parsedUser)
-        setUser(parsedUser)
-        setIsAuthenticated(true)
+        try {
+          const parsedUser = JSON.parse(userData)
+          console.log('useAuth checkAuth - Parsed user:', parsedUser)
+          
+          // Verify token with server
+          const isValid = await verifyTokenWithServer(token)
+          if (isValid) {
+            setUser(parsedUser)
+            setIsAuthenticated(true)
+          } else {
+            console.log('useAuth checkAuth - Token invalid, clearing auth data')
+            clearAuthData()
+          }
+        } catch (parseError) {
+          console.error('Error parsing user data:', parseError)
+          clearAuthData()
+        }
       } else {
         console.log('useAuth checkAuth - No token or user data, setting unauthenticated')
         setUser(null)
@@ -40,28 +61,31 @@ export function useAuth() {
       }
     } catch (error) {
       console.error('Error checking auth:', error)
-      setUser(null)
-      setIsAuthenticated(false)
+      clearAuthData()
     } finally {
       setLoading(false)
+      setAuthChecked(true)
     }
   }
 
-  const login = (userData: User, token: string) => {
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(userData))
-    
-    // Set cookies for middleware
-    const expires = new Date()
-    expires.setDate(expires.getDate() + 7)
-    document.cookie = `token=${token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
-    document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
-    
-    setUser(userData)
-    setIsAuthenticated(true)
+  const verifyTokenWithServer = async (token: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/verify', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Token verification failed:', error)
+      return false
+    }
   }
 
-  const logout = () => {
+  const clearAuthData = () => {
+    console.log('Clearing authentication data')
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     
@@ -71,30 +95,65 @@ export function useAuth() {
     
     setUser(null)
     setIsAuthenticated(false)
+  }
+
+  const login = (userData: User, token: string) => {
+    // Validate token format before storing
+    if (token.length < 100) {
+      console.error('Invalid token format received')
+      return false
+    }
+
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(userData))
+    
+    // Set cookies for middleware with 24-hour expiration
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 1) // 24 hours
+    document.cookie = `token=${token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
+    document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
+    
+    setUser(userData)
+    setIsAuthenticated(true)
+    return true
+  }
+
+  const logout = () => {
+    clearAuthData()
     router.push('/login')
   }
 
-  const clearAuth = () => {
-    console.log('Clearing authentication data due to invalid token')
-    logout()
-  }
-
   const requireAuth = () => {
-    if (!isAuthenticated && !loading) {
+    if (!authChecked) {
+      return false // Still checking authentication
+    }
+    if (!isAuthenticated) {
       router.push('/login')
       return false
     }
     return isAuthenticated
   }
 
+  // Auto-logout after 24 hours
+  useEffect(() => {
+    if (isAuthenticated) {
+      const timeout = setTimeout(() => {
+        console.log('Session expired, logging out')
+        logout()
+      }, 24 * 60 * 60 * 1000) // 24 hours
+
+      return () => clearTimeout(timeout)
+    }
+  }, [isAuthenticated])
+
   return {
     user,
-    loading,
+    loading: loading || !authChecked,
     isAuthenticated,
     login,
     logout,
     requireAuth,
     checkAuth,
-    clearAuth
+    clearAuthData
   }
 }
