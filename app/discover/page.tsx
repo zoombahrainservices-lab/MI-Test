@@ -201,13 +201,8 @@ export default function DiscoverPage() {
 
   const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
     try {
-      setSavingResults(true)
-      setSaveError(null)
-      setSaveSuccess(null)
-      
       if (!user) {
         console.error('User not authenticated')
-        setSaveError('User not authenticated')
         return false
       }
 
@@ -267,14 +262,10 @@ export default function DiscoverPage() {
       }
 
       console.log(`${level} level results saved successfully`)
-      setSaveSuccess(`${level.charAt(0).toUpperCase() + level.slice(1)} level results saved successfully!`)
       return true
     } catch (error) {
       console.error(`Error saving ${level} level results:`, error)
-      setSaveError(`Failed to save ${level} level results. Please try again.`)
       return false
-    } finally {
-      setSavingResults(false)
     }
   }
 
@@ -287,8 +278,13 @@ export default function DiscoverPage() {
         setEasyTiming(timing)
       }
       
-      // Save easy results to database
-      await saveTestResultToDatabase(easyTestResults, 'easy', timing, user)
+      // Try to save easy results to database (don't block progression if it fails)
+      try {
+        await saveTestResultToDatabase(easyTestResults, 'easy', timing, user)
+      } catch (error) {
+        console.error('Failed to save easy results:', error)
+        // Don't block progression - just log the error
+      }
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show medium results page
@@ -298,8 +294,13 @@ export default function DiscoverPage() {
         setMediumTiming(timing)
       }
       
-      // Save medium results to database
-      await saveTestResultToDatabase(mediumTestResults, 'medium', timing, user)
+      // Try to save medium results to database (don't block progression if it fails)
+      try {
+        await saveTestResultToDatabase(mediumTestResults, 'medium', timing, user)
+      } catch (error) {
+        console.error('Failed to save medium results:', error)
+        // Don't block progression - just log the error
+      }
       setCurrentStep('medium-results')
     } else if (currentLevel === 'hard') {
       // Calculate hard results and show final results
@@ -326,8 +327,13 @@ export default function DiscoverPage() {
         setTimingData(combinedTiming)
       }
       
-      // Save hard results to database
-      await saveTestResultToDatabase(hardTestResults, 'hard', timing, user)
+      // Try to save hard results to database (don't block progression if it fails)
+      try {
+        await saveTestResultToDatabase(hardTestResults, 'hard', timing, user)
+      } catch (error) {
+        console.error('Failed to save hard results:', error)
+        // Don't block progression - just log the error
+      }
       setCurrentStep('results')
     }
   }

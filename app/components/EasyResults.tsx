@@ -181,14 +181,9 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest, sa
           </button>
           <button
             onClick={onMoveToMedium}
-            disabled={savingResults || !!saveError}
-            className={`font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg ${
-              savingResults || saveError 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-yellow-600 hover:bg-yellow-700 text-white'
-            }`}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
-            {savingResults ? 'Saving...' : '🟡 Move to Medium Level'}
+            🟡 Move to Medium Level
           </button>
         </div>
       </div>

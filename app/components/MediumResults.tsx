@@ -181,14 +181,9 @@ export default function MediumResults({ results, onMoveToHard, onRestartTest, sa
           </button>
           <button
             onClick={onMoveToHard}
-            disabled={savingResults || !!saveError}
-            className={`font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg ${
-              savingResults || saveError 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-red-600 hover:bg-red-700 text-white'
-            }`}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
           >
-            {savingResults ? 'Saving...' : '🔴 Move to Hard Level'}
+            🔴 Move to Hard Level
           </button>
         </div>
       </div>
