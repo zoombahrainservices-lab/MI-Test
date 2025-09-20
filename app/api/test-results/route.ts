@@ -16,10 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7)
-    console.log('Token found, verifying...')
+    console.log('Token found, verifying...', { token: token.substring(0, 20) + '...' })
     const user = verifyToken(token)
     if (!user) {
-      console.log('Token verification failed')
+      console.log('Token verification failed - token might be expired or invalid')
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }

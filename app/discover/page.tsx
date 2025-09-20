@@ -201,10 +201,10 @@ export default function DiscoverPage() {
 
   const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData, user?: any) => {
     try {
-      console.log('Starting to save test results:', { level, user, results })
+      console.log('Starting to save test results:', { level, user, results, isAuthenticated })
       
-      if (!user) {
-        console.error('User not authenticated')
+      if (!user || !isAuthenticated) {
+        console.error('User not authenticated:', { user: !!user, isAuthenticated })
         return false
       }
 
@@ -260,11 +260,32 @@ export default function DiscoverPage() {
       
       console.log('Sending request to API:', requestData)
       
+      const token = localStorage.getItem('token')
+      const userData = localStorage.getItem('user')
+      console.log('Token from localStorage:', token)
+      console.log('User data from localStorage:', userData)
+      console.log('Current user state:', user)
+      console.log('Current isAuthenticated state:', isAuthenticated)
+      
+      // Check if token is expired
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          const now = Math.floor(Date.now() / 1000)
+          console.log('Token payload:', payload)
+          console.log('Token expires at:', new Date(payload.exp * 1000))
+          console.log('Current time:', new Date(now * 1000))
+          console.log('Token expired:', payload.exp < now)
+        } catch (error) {
+          console.log('Error decoding token:', error)
+        }
+      }
+      
       const response = await fetch('/api/test-results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(requestData)
       })
@@ -274,6 +295,18 @@ export default function DiscoverPage() {
       if (!response.ok) {
         const errorData = await response.json()
         console.error('API error response:', errorData)
+        
+        // If token is invalid, redirect to login
+        if (response.status === 401) {
+          console.log('Token invalid, redirecting to login...')
+          // Clear invalid token
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          // Redirect to login
+          window.location.href = '/login'
+          return false
+        }
+        
         throw new Error(`Failed to save test result: ${errorData.error || 'Unknown error'}`)
       }
 
