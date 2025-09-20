@@ -138,9 +138,9 @@ export default function HomePage() {
             <p className="text-xs sm:text-sm text-gray-600">Spiritual smart</p>
           </div>
           <div className="text-center p-3 sm:p-4">
-            <div className="text-2xl sm:text-3xl mb-2">👑</div>
-            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Leadership & Social Influence</h4>
-            <p className="text-xs sm:text-sm text-gray-600">Leader smart</p>
+            <div className="text-2xl sm:text-3xl mb-2">🧩</div>
+            <h4 className="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Spatial</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Picture smart</p>
           </div>
         </div>
       </div>

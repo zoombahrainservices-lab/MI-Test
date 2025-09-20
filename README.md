@@ -21,7 +21,7 @@ A modern, responsive web application built with Next.js, TypeScript, and Tailwin
 6. **Intrapersonal Intelligence** - Self smart
 7. **Naturalistic Intelligence** - Nature smart
 8. **Existential/Spiritual Intelligence** - Spiritual smart
-9. **Leadership & Social Influence** - Leader smart
+9. **Spatial Intelligence** - Picture smart
 
 ## Getting Started
 

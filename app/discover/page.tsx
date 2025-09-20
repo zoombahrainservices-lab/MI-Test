@@ -76,7 +76,7 @@ export default function DiscoverPage() {
         intrapersonal: results.find(r => r.category === 'Intrapersonal')?.score || 0,
         naturalistic: results.find(r => r.category === 'Naturalistic')?.score || 0,
         existential: results.find(r => r.category === 'Existential/Spiritual')?.score || 0,
-        leadership: results.find(r => r.category === 'Leadership & Social Influence')?.score || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.score || 0,
       }
 
       const percentages = {
@@ -88,7 +88,7 @@ export default function DiscoverPage() {
         intrapersonal: results.find(r => r.category === 'Intrapersonal')?.percentage || 0,
         naturalistic: results.find(r => r.category === 'Naturalistic')?.percentage || 0,
         existential: results.find(r => r.category === 'Existential/Spiritual')?.percentage || 0,
-        leadership: results.find(r => r.category === 'Leadership & Social Influence')?.percentage || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.percentage || 0,
       }
 
       const topIntelligence = results.reduce((prev, current) => (prev.percentage > current.percentage) ? prev : current).category
@@ -153,8 +153,8 @@ export default function DiscoverPage() {
     // Existential/Spiritual Intelligence
     { id: 8, text: "I reflect on the meaning of my actions and their impact on others", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
-    // Leadership & Social Influence
-    { id: 9, text: "I naturally take initiative when a group lacks direction", category: "Leadership & Social Influence", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    // Spatial Intelligence
+    { id: 9, text: "I can easily visualize objects in 3D", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Additional question for better coverage
     { id: 10, text: "I pay attention to the words I use to ensure they are accurate", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
@@ -184,8 +184,8 @@ export default function DiscoverPage() {
     // Existential/Spiritual Intelligence - Medium
     { id: 18, text: "I feel strongly about fairness, justice, and ethical decisions", category: "Existential/Spiritual", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
-    // Leadership & Social Influence - Medium
-    { id: 19, text: "I feel confident expressing my opinions even in challenging situations", category: "Leadership & Social Influence", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    // Spatial Intelligence - Medium
+    { id: 19, text: "I can mentally rotate and manipulate 3D objects to solve spatial problems", category: "Spatial", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Additional question for better coverage
     { id: 20, text: "I enjoy reading or learning new ways to communicate effectively", category: "Linguistic", difficulty: "medium", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
@@ -215,8 +215,8 @@ export default function DiscoverPage() {
     // Existential/Spiritual Intelligence - Hard
     { id: 28, text: "I value inner peace and try to create calm in my surroundings", category: "Existential/Spiritual", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
-    // Leadership & Social Influence - Hard
-    { id: 29, text: "I often guide or mentor others to achieve shared goals", category: "Leadership & Social Influence", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+    // Spatial Intelligence - Hard
+    { id: 29, text: "I can mentally manipulate complex 3D structures and predict how they would behave under various conditions", category: "Spatial", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
     
     // Additional question for better coverage
     { id: 30, text: "I notice grammatical or logical inconsistencies in written or spoken information", category: "Linguistic", difficulty: "hard", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] }
@@ -236,7 +236,7 @@ export default function DiscoverPage() {
       'Intrapersonal',
       'Naturalistic',
       'Existential/Spiritual',
-      'Leadership & Social Influence'
+      'Spatial'
     ]
 
     categories.forEach(category => {
@@ -368,7 +368,7 @@ export default function DiscoverPage() {
       'Intrapersonal': 'Self smart - you excel with self-awareness and personal reflection',
       'Naturalistic': 'Nature smart - you excel with understanding natural systems and environments',
       'Existential/Spiritual': 'Spiritual smart - you excel with meaning, values, and ethical reasoning',
-      'Leadership & Social Influence': 'Leader smart - you excel with guiding others and social influence'
+      'Spatial': 'Picture smart - you excel with visual and spatial relationships'
     }
     return descriptions[category] || 'Unknown intelligence type'
   }
