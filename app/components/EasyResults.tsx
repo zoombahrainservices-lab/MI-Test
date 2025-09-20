@@ -4,9 +4,12 @@ interface EasyResultsProps {
   results: TestResult[]
   onMoveToMedium: () => void
   onRestartTest: () => void
+  savingResults?: boolean
+  saveError?: string | null
+  saveSuccess?: string | null
 }
 
-export default function EasyResults({ results, onMoveToMedium, onRestartTest }: EasyResultsProps) {
+export default function EasyResults({ results, onMoveToMedium, onRestartTest, savingResults, saveError, saveSuccess }: EasyResultsProps) {
   const topResult = results[0]
   const secondResult = results[1]
   const thirdResult = results[2]
@@ -136,6 +139,32 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
           </div>
         </div>
 
+        {/* Save Status */}
+        {savingResults && (
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
+              <span className="text-blue-700">Saving your results to the database...</span>
+            </div>
+          </div>
+        )}
+
+        {saveError && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div className="flex items-center">
+              <span className="text-red-700">⚠️ {saveError}</span>
+            </div>
+          </div>
+        )}
+
+        {saveSuccess && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+            <div className="flex items-center">
+              <span className="text-green-700">✅ {saveSuccess}</span>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="text-center space-x-4 print:hidden">
           <button
@@ -152,9 +181,14 @@ export default function EasyResults({ results, onMoveToMedium, onRestartTest }: 
           </button>
           <button
             onClick={onMoveToMedium}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg"
+            disabled={savingResults || !!saveError}
+            className={`font-bold py-4 px-8 rounded-lg text-lg transition duration-200 transform hover:scale-105 shadow-lg ${
+              savingResults || saveError 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+            }`}
           >
-            🟡 Move to Medium Level
+            {savingResults ? 'Saving...' : '🟡 Move to Medium Level'}
           </button>
         </div>
       </div>

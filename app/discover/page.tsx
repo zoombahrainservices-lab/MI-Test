@@ -46,6 +46,9 @@ export default function DiscoverPage() {
   const [easyTiming, setEasyTiming] = useState<TimingData | null>(null)
   const [mediumTiming, setMediumTiming] = useState<TimingData | null>(null)
   const [hardTiming, setHardTiming] = useState<TimingData | null>(null)
+  const [savingResults, setSavingResults] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
 
   const questions: Question[] = [
     // EASY QUESTIONS (1-10)
@@ -196,7 +199,87 @@ export default function DiscoverPage() {
     })
   }
 
-  const handleSubmitTest = (timing?: TimingData) => {
+  const saveTestResultToDatabase = async (results: TestResult[], level: string, timing?: TimingData) => {
+    try {
+      setSavingResults(true)
+      setSaveError(null)
+      setSaveSuccess(null)
+      
+      const { user } = useAuth()
+      if (!user) {
+        console.error('User not authenticated')
+        setSaveError('User not authenticated')
+        return false
+      }
+
+      // Convert results to the format expected by the API
+      const scores = {
+        linguistic: results.find(r => r.category === 'Linguistic')?.score || 0,
+        logical: results.find(r => r.category === 'Logical-Mathematical')?.score || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.score || 0,
+        musical: results.find(r => r.category === 'Musical')?.score || 0,
+        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.score || 0,
+        interpersonal: results.find(r => r.category === 'Interpersonal')?.score || 0,
+        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.score || 0,
+        naturalist: results.find(r => r.category === 'Naturalist')?.score || 0,
+      }
+
+      const percentages = {
+        linguistic: results.find(r => r.category === 'Linguistic')?.percentage || 0,
+        logical: results.find(r => r.category === 'Logical-Mathematical')?.percentage || 0,
+        spatial: results.find(r => r.category === 'Spatial')?.percentage || 0,
+        musical: results.find(r => r.category === 'Musical')?.percentage || 0,
+        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.percentage || 0,
+        interpersonal: results.find(r => r.category === 'Interpersonal')?.percentage || 0,
+        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.percentage || 0,
+        naturalist: results.find(r => r.category === 'Naturalist')?.percentage || 0,
+      }
+
+      const topIntelligence = results[0]?.category || 'Linguistic'
+      const secondIntelligence = results[1]?.category || 'Logical-Mathematical'
+      const thirdIntelligence = results[2]?.category || 'Spatial'
+
+      // Add level and timing information to answers
+      const answersWithMetadata = {
+        ...answers,
+        level: level,
+        timing: timing,
+        completedAt: new Date().toISOString()
+      }
+
+      const response = await fetch('/api/test-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          answers: answersWithMetadata,
+          scores,
+          percentages,
+          topIntelligence,
+          secondIntelligence,
+          thirdIntelligence
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save test result')
+      }
+
+      console.log(`${level} level results saved successfully`)
+      setSaveSuccess(`${level.charAt(0).toUpperCase() + level.slice(1)} level results saved successfully!`)
+      return true
+    } catch (error) {
+      console.error(`Error saving ${level} level results:`, error)
+      setSaveError(`Failed to save ${level} level results. Please try again.`)
+      return false
+    } finally {
+      setSavingResults(false)
+    }
+  }
+
+  const handleSubmitTest = async (timing?: TimingData) => {
     if (currentLevel === 'easy') {
       // Calculate easy results and show easy results page
       const easyTestResults = calculateResults(answers, 'easy')
@@ -204,6 +287,9 @@ export default function DiscoverPage() {
       if (timing) {
         setEasyTiming(timing)
       }
+      
+      // Save easy results to database
+      await saveTestResultToDatabase(easyTestResults, 'easy', timing)
       setCurrentStep('easy-results')
     } else if (currentLevel === 'medium') {
       // Calculate medium results and show medium results page
@@ -212,6 +298,9 @@ export default function DiscoverPage() {
       if (timing) {
         setMediumTiming(timing)
       }
+      
+      // Save medium results to database
+      await saveTestResultToDatabase(mediumTestResults, 'medium', timing)
       setCurrentStep('medium-results')
     } else if (currentLevel === 'hard') {
       // Calculate hard results and show final results
@@ -237,6 +326,9 @@ export default function DiscoverPage() {
         combinedTiming.averageTimePerQuestion = totalQuestions > 0 ? Math.round(combinedTiming.totalTime / totalQuestions) : 0
         setTimingData(combinedTiming)
       }
+      
+      // Save hard results to database
+      await saveTestResultToDatabase(hardTestResults, 'hard', timing)
       setCurrentStep('results')
     }
   }
@@ -311,6 +403,9 @@ export default function DiscoverPage() {
               results={easyResults}
               onMoveToMedium={handleMoveToMedium}
               onRestartTest={handleRestartTest}
+              savingResults={savingResults}
+              saveError={saveError}
+              saveSuccess={saveSuccess}
             />
           </ProtectedRoute>
         )}
@@ -321,6 +416,9 @@ export default function DiscoverPage() {
               results={mediumResults}
               onMoveToHard={handleMoveToHard}
               onRestartTest={handleRestartTest}
+              savingResults={savingResults}
+              saveError={saveError}
+              saveSuccess={saveSuccess}
             />
           </ProtectedRoute>
         )}
