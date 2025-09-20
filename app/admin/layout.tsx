@@ -16,6 +16,12 @@ export default function AdminLayout({
   const router = useRouter()
 
   useEffect(() => {
+    // Skip authentication check for login page
+    if (pathname === '/admin/login') {
+      setLoading(false)
+      return
+    }
+
     // Check if admin is logged in by making a request to verify the token
     const checkAdminAuth = async () => {
       try {
@@ -36,7 +42,7 @@ export default function AdminLayout({
     }
 
     checkAdminAuth()
-  }, [router])
+  }, [router, pathname])
 
   // Show loading state while checking authentication
   if (loading) {
@@ -48,6 +54,11 @@ export default function AdminLayout({
         </div>
       </div>
     )
+  }
+
+  // For login page, render without admin layout
+  if (pathname === '/admin/login') {
+    return <>{children}</>
   }
 
   // Don't render the admin layout if not authenticated

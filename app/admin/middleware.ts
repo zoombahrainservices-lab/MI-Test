@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromRequest } from '@/lib/admin-middleware'
 
 export async function middleware(req: NextRequest) {
+  // Skip authentication check for login page
+  if (req.nextUrl.pathname === '/admin/login') {
+    return NextResponse.next()
+  }
+
   // Check if admin is authenticated using admin token
   const admin = getAdminFromRequest(req)
 
