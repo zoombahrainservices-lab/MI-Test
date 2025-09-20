@@ -27,8 +27,8 @@ export default function AdminLoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Redirect to admin dashboard
-        router.push('/admin')
+        // Redirect to admin users page
+        router.push('/admin/users')
       } else {
         setError(data.error || 'Login failed')
       }
@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
             Admin Sign In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Access the admin dashboard
+            Access the admin panel
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

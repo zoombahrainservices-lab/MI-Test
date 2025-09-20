@@ -79,7 +79,6 @@ export default function AdminLayout({
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: '📊' },
     { name: 'Users', href: '/admin/users', icon: '👥' },
     { name: 'Questions', href: '/admin/questions', icon: '❓' },
     { name: 'Test Results', href: '/admin/results', icon: '📈' },
@@ -87,9 +86,6 @@ export default function AdminLayout({
   ]
 
   const isActive = (href: string) => {
-    if (href === '/admin') {
-      return pathname === '/admin'
-    }
     return pathname.startsWith(href)
   }
 
