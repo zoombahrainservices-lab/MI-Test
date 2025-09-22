@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching questions:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch questions', details: error.message },
+      { error: 'Failed to fetch questions', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating question:', error)
     return NextResponse.json(
-      { error: 'Failed to create question', details: error.message },
+      { error: 'Failed to create question', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -219,7 +219,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating question:', error)
     return NextResponse.json(
-      { error: 'Failed to update question', details: error.message },
+      { error: 'Failed to update question', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -254,7 +254,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting question:', error)
     return NextResponse.json(
-      { error: 'Failed to delete question', details: error.message },
+      { error: 'Failed to delete question', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching users:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch users', details: error.message },
+      { error: 'Failed to fetch users', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -201,7 +201,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating user status:', error)
     return NextResponse.json(
-      { error: 'Failed to update user status', details: error.message },
+      { error: 'Failed to update user status', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -237,7 +237,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting user:', error)
     return NextResponse.json(
-      { error: 'Failed to delete user', details: error.message },
+      { error: 'Failed to delete user', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
