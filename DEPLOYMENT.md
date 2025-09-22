@@ -44,3 +44,17 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 - **Missing Password**: Replace `[YOUR-PASSWORD]` with your actual Supabase database password
 - **Wrong Domain**: Use `mi-test-eight.vercel.app` as your NEXTAUTH_URL
 - **TypeScript Errors**: Ensure all TypeScript errors are resolved before deployment
+- **Database Connection**: Test database connection at `/api/test-db-connection`
+
+## Database Connection Test
+
+After deployment, test your database connection by visiting:
+```
+https://mi-test-eight.vercel.app/api/test-db-connection
+```
+
+This will show you:
+- Database connection status
+- Port configuration
+- Record counts
+- Any connection errors
