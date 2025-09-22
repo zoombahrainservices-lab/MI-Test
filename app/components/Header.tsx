@@ -28,9 +28,9 @@ export default function Header() {
               <Image
                 src="/logo.png"
                 alt="MindMatrix Logo"
-                width={80}
-                height={80}
-                className="w-16 h-16 sm:w-20 sm:h-20"
+                width={48}
+                height={48}
+                className="w-10 h-10 sm:w-12 sm:h-12"
                 priority
               />
               <span className="text-lg sm:text-xl font-bold text-gray-800">MindMatrix</span>
