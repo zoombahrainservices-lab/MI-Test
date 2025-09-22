@@ -160,7 +160,7 @@ async function updateQuestions() {
         
       } catch (error) {
         errorCount++
-        console.log(`❌ Error adding question ${i + 1}: ${error.message}`)
+        console.log(`❌ Error adding question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
     

@@ -16,7 +16,7 @@ interface TestAnswer {
   difficulty: string
 }
 
-interface TestResult {
+export interface TestResult {
   category: string
   score: number
   percentage: number
