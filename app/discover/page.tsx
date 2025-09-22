@@ -37,7 +37,7 @@ export default function DiscoverPage() {
   const [questionsError, setQuestionsError] = useState<string | null>(null)
 
   // Constants for pagination
-  const QUESTIONS_PER_PAGE = 4
+  const QUESTIONS_PER_PAGE = 1
   const TOTAL_PAGES = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_PAGE) : 0
 
   // Fetch questions from database

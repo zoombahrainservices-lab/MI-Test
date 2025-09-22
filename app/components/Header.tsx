@@ -19,8 +19,17 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white shadow-lg">
-      <div className="container mx-auto px-4 py-4">
+    <header 
+      className="shadow-lg relative"
+      style={{
+        backgroundImage: 'url(/heroimage.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="container mx-auto px-4 py-4 relative z-10">
         <nav className="flex items-center justify-between">
           {/* Left side - Logo/Title */}
           <div className="flex items-center">
@@ -33,7 +42,7 @@ export default function Header() {
                 className="w-10 h-10 sm:w-12 sm:h-12"
                 priority
               />
-              <span className="text-lg sm:text-xl font-bold text-gray-800">MindMatrix</span>
+              <span className="text-lg sm:text-xl font-bold text-white">MindMatrix</span>
             </Link>
           </div>
 
@@ -43,8 +52,8 @@ export default function Header() {
               href="/" 
               className={`relative transition duration-200 font-medium ${
                 isActive('/') 
-                  ? 'text-blue-600' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'text-blue-300' 
+                  : 'text-white hover:text-blue-300'
               }`}
             >
               Home
@@ -57,8 +66,8 @@ export default function Header() {
                 href="/discover" 
                 className={`relative transition duration-200 font-medium ${
                   isActive('/discover') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-blue-600'
+                    ? 'text-blue-300' 
+                    : 'text-white hover:text-blue-300'
                 }`}
               >
                 Discover
@@ -71,8 +80,8 @@ export default function Header() {
               href="/pricing" 
               className={`relative transition duration-200 font-medium ${
                 isActive('/pricing') 
-                  ? 'text-blue-600' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'text-blue-300' 
+                  : 'text-white hover:text-blue-300'
               }`}
             >
               Pricing
@@ -84,8 +93,8 @@ export default function Header() {
               href="/contact" 
               className={`relative transition duration-200 font-medium ${
                 isActive('/contact') 
-                  ? 'text-blue-600' 
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'text-blue-300' 
+                  : 'text-white hover:text-blue-300'
               }`}
             >
               Contact
@@ -99,7 +108,7 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600 hidden lg:inline">Welcome, {user?.name || user?.email}</span>
+                <span className="text-white hidden lg:inline">Welcome, {user?.name || user?.email}</span>
                 <button
                   onClick={logout}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200"
@@ -111,11 +120,11 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium"
+                  className="text-white hover:text-blue-300 transition duration-200 font-medium"
                 >
                   Login
                 </Link>
-                <span className="text-gray-400">|</span>
+                <span className="text-gray-300">|</span>
                 <Link
                   href="/signup"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200"
@@ -130,7 +139,7 @@ export default function Header() {
           <div className="md:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-800 p-2"
+              className="text-white hover:text-blue-300 p-2"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMobileMenuOpen ? (
@@ -145,7 +154,7 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
+          <div className="md:hidden mt-4 pb-4 border-t border-gray-300">
             <div className="flex flex-col space-y-4 pt-4">
               {/* Navigation Links */}
               <div className="flex flex-col space-y-2">
@@ -153,8 +162,8 @@ export default function Header() {
                   href="/" 
                   className={`relative transition duration-200 font-medium py-2 ${
                     isActive('/') 
-                      ? 'text-blue-600' 
-                      : 'text-gray-600 hover:text-blue-600'
+                      ? 'text-blue-300' 
+                      : 'text-white hover:text-blue-300'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -168,14 +177,14 @@ export default function Header() {
                     href="/discover" 
                     className={`relative transition duration-200 font-medium py-2 ${
                       isActive('/discover') 
-                        ? 'text-blue-600' 
-                        : 'text-gray-600 hover:text-blue-600'
+                        ? 'text-blue-300' 
+                        : 'text-white hover:text-blue-300'
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Discover
                     {isActive('/discover') && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-300"></div>
                     )}
                   </Link>
                 )}
@@ -183,37 +192,37 @@ export default function Header() {
                   href="/pricing" 
                   className={`relative transition duration-200 font-medium py-2 ${
                     isActive('/pricing') 
-                      ? 'text-blue-600' 
-                      : 'text-gray-600 hover:text-blue-600'
+                      ? 'text-blue-300' 
+                      : 'text-white hover:text-blue-300'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Pricing
                   {isActive('/pricing') && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-300"></div>
                   )}
                 </Link>
                 <Link 
                   href="/contact" 
                   className={`relative transition duration-200 font-medium py-2 ${
                     isActive('/contact') 
-                      ? 'text-blue-600' 
-                      : 'text-gray-600 hover:text-blue-600'
+                      ? 'text-blue-300' 
+                      : 'text-white hover:text-blue-300'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Contact
                   {isActive('/contact') && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-300"></div>
                   )}
                 </Link>
               </div>
 
               {/* Auth Section */}
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-gray-300 pt-4">
                 {isAuthenticated ? (
                   <div className="flex flex-col space-y-3">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-200">
                       Welcome, {user?.name || user?.email}
                     </div>
                     <button
@@ -230,7 +239,7 @@ export default function Header() {
                   <div className="flex flex-col space-y-2">
                     <Link
                       href="/login"
-                      className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
+                      className="text-white hover:text-blue-300 transition duration-200 font-medium py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Login
