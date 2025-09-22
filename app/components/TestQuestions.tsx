@@ -98,7 +98,7 @@ export default function TestQuestions({
         {/* Progress Bar */}
         <div className="mb-6 sm:mb-8">
           <div className="flex justify-center items-center mb-4">
-            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-sm sm:text-base animate-pulse">
+            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-normal text-sm sm:text-base animate-pulse">
               {Math.round(progress)}% Complete
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function TestQuestions({
               }}
             >
               <div className="mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 leading-relaxed animate-fade-in">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-normal text-gray-700 leading-relaxed animate-fade-in">
                   {question.text}
                 </h3>
               </div>
@@ -153,7 +153,7 @@ export default function TestQuestions({
                       >
                       </div>
                     </label>
-                    <span className="text-xs sm:text-sm md:text-base font-medium text-gray-700 text-center leading-tight max-w-12 sm:max-w-16 md:max-w-20 lg:max-w-24">
+                    <span className="text-xs sm:text-sm md:text-base font-normal text-gray-600 text-center leading-tight max-w-12 sm:max-w-16 md:max-w-20 lg:max-w-24">
                       {option}
                     </span>
                   </div>
@@ -168,7 +168,7 @@ export default function TestQuestions({
           <button
             onClick={handlePreviousPage}
             disabled={currentPageIndex === 0}
-            className={`font-medium py-2 px-4 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base ${
+            className={`font-normal py-2 px-4 sm:px-6 rounded-lg transition duration-200 text-sm sm:text-base ${
               currentPageIndex === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-gray-600 hover:bg-gray-700 text-white'
