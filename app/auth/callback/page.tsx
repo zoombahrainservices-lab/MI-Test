@@ -44,8 +44,8 @@ export default function AuthCallback() {
               // Use the auth hook's login function to set both localStorage and cookies
               login(userData.user, data.session.access_token)
               
-              // Redirect to dashboard
-              router.push('/dashboard')
+              // Redirect to discover page
+              router.push('/discover')
             } else {
               console.error('Failed to create user:', userData.error)
               router.push('/login?error=user_creation_failed')

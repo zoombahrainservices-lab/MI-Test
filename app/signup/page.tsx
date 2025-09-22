@@ -14,7 +14,7 @@ export default function SignupPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard')
+      router.push('/discover')
     }
   }, [isAuthenticated, router])
   const [formData, setFormData] = useState({
@@ -72,8 +72,8 @@ export default function SignupPage() {
         // Use the auth hook's login function to set both localStorage and cookies
         login(data.user, data.token)
         
-        // Redirect to dashboard
-        router.push('/dashboard')
+        // Redirect to discover page
+        router.push('/discover')
       } else {
         setError(data.error || 'An error occurred')
       }

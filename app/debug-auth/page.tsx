@@ -112,10 +112,10 @@ export default function DebugAuth() {
           </button>
           
           <button
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => window.location.href = '/discover'}
             className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
           >
-            Go to Dashboard
+            Go to Discover
           </button>
         </div>
       </div>

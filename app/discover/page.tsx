@@ -1,20 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useAuth } from '../hooks/useAuth'
-import ProtectedRoute from '../components/ProtectedRoute'
 import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
 import TestResults from '../components/TestResults'
-
-interface Question {
-  id: number
-  text: string
-  category: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  options: string[]
-}
+import { Question } from '../data/questions'
 
 interface TestAnswer {
   questionId: number
@@ -33,11 +26,44 @@ interface TestResult {
 export default function DiscoverPage() {
   const { isAuthenticated, loading, user } = useAuth()
   const [currentStep, setCurrentStep] = useState<'intro' | 'gender' | 'test' | 'results'>('intro')
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [saving, setSaving] = useState(false)
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
+  const [currentPageAnswers, setCurrentPageAnswers] = useState<Record<number, number>>({})
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [questionsLoading, setQuestionsLoading] = useState(true)
+  const [questionsError, setQuestionsError] = useState<string | null>(null)
+
+  // Constants for pagination
+  const QUESTIONS_PER_PAGE = 4
+  const TOTAL_PAGES = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_PAGE) : 0
+
+  // Fetch questions from database
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setQuestionsLoading(true)
+        setQuestionsError(null)
+        
+        const response = await fetch('/api/questions')
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions')
+        }
+        
+        const data = await response.json()
+        setQuestions(data.questions || [])
+      } catch (error) {
+        console.error('Error fetching questions:', error)
+        setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
+      } finally {
+        setQuestionsLoading(false)
+      }
+    }
+
+    fetchQuestions()
+  }, [])
 
   const saveTestResultToDatabase = async (results: TestResult[]) => {
     if (!user) {
@@ -116,53 +142,6 @@ export default function DiscoverPage() {
     }
   }
 
-  const questions: Question[] = [
-    // Linguistic Intelligence
-    { id: 1, text: "I enjoy expressing my ideas clearly in writing or speech", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 2, text: "I pay attention to the words I use to ensure they are accurate", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 3, text: "I am motivated to persuade or inspire others through language", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 4, text: "I enjoy reading or learning new ways to communicate effectively", category: "Linguistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Logical-Mathematical Intelligence
-    { id: 5, text: "I enjoy identifying patterns and predicting outcomes before taking action", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 6, text: "I like breaking problems into smaller steps to find the best solution", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 7, text: "I often analyze situations from multiple angles before making decisions", category: "Logical-Mathematical", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Musical & Creative Intelligence
-    { id: 8, text: "I feel inspired when surrounded by art, music, or design", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 9, text: "I often find new ways to approach a task or challenge creatively", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 10, text: "I draw inspiration from emotions or life experiences for my creative work", category: "Musical & Creative", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Bodily-Kinesthetic Intelligence
-    { id: 11, text: "I feel comfortable learning by doing rather than only observing", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 12, text: "I often use physical activity to think through ideas or problems", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 13, text: "I am skilled at adapting my actions to achieve practical results", category: "Bodily-Kinesthetic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Interpersonal Intelligence
-    { id: 14, text: "I notice when someone is feeling upset even if they do not say anything", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 15, text: "I enjoy helping people resolve their conflicts or misunderstandings", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 16, text: "I naturally create harmony in groups by listening to everyone's perspective", category: "Interpersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Intrapersonal Intelligence
-    { id: 17, text: "I often reflect on my thoughts and emotions to understand myself better", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 18, text: "I prefer setting personal goals and working independently to achieve them", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 19, text: "I make decisions based on my values and long-term priorities", category: "Intrapersonal", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Naturalistic Intelligence
-    { id: 20, text: "I enjoy exploring nature and discovering new environments", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 21, text: "I am curious about how natural systems and living things interact", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 22, text: "I often notice details in my environment that others might miss", category: "Naturalistic", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Existential/Spiritual Intelligence
-    { id: 23, text: "I reflect on the meaning of my actions and their impact on others", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 24, text: "I feel strongly about fairness, justice, and ethical decisions", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 25, text: "I value inner peace and try to create calm in my surroundings", category: "Existential/Spiritual", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    
-    // Spatial Intelligence
-    { id: 26, text: "I can easily visualize objects in 3D", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 27, text: "I can mentally rotate and manipulate 3D objects to solve spatial problems", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-    { id: 28, text: "I can mentally manipulate complex 3D structures and predict how they would behave under various conditions", category: "Spatial", difficulty: "easy", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] }
-  ]
 
   const calculateResults = (answers: Record<number, number>) => {
     const categoryScores: Record<string, number> = {}
@@ -212,9 +191,6 @@ export default function DiscoverPage() {
     return results.sort((a, b) => b.percentage - a.percentage)
   }
 
-  const getCurrentQuestions = () => {
-    return questions
-  }
 
   const handleStartTest = () => {
     setCurrentStep('gender')
@@ -223,39 +199,93 @@ export default function DiscoverPage() {
   const handleGenderSelect = (selectedGender: 'male' | 'female') => {
     setGender(selectedGender)
     setCurrentStep('test')
-    setCurrentQuestionIndex(0)
+    setCurrentPageIndex(0)
     setAnswers({})
+    setCurrentPageAnswers({})
   }
 
-  const handleNextQuestion = (answer: number) => {
-    const currentQuestions = getCurrentQuestions()
-    const currentQuestion = currentQuestions[currentQuestionIndex]
-    
-    if (currentQuestion) {
-      setAnswers(prev => ({
-        ...prev,
-        [currentQuestion.id]: answer
-      }))
-
-      if (currentQuestionIndex < currentQuestions.length - 1) {
-        setCurrentQuestionIndex(prev => prev + 1)
-      } else {
-        handleSubmitTest()
-      }
+  // Initialize currentPageAnswers when page changes (but not when answers change to avoid loops)
+  useEffect(() => {
+    if (currentStep === 'test') {
+      const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
+      const endIndex = startIndex + QUESTIONS_PER_PAGE
+      const currentPageQuestions = questions.slice(startIndex, endIndex)
+      const pageAnswers: Record<number, number> = {}
+      
+      currentPageQuestions.forEach(question => {
+        if (answers[question.id] !== undefined) {
+          pageAnswers[question.id] = answers[question.id]
+        }
+      })
+      
+      setCurrentPageAnswers(pageAnswers)
     }
+  }, [currentPageIndex, currentStep]) // Removed 'answers' from dependencies to prevent loops
+
+  const getCurrentPageQuestions = () => {
+    const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
+    const endIndex = startIndex + QUESTIONS_PER_PAGE
+    return questions.slice(startIndex, endIndex)
   }
 
-  const handleSubmitTest = async () => {
+  const handleAnswerSelect = (questionId: number, answer: number) => {
+    setCurrentPageAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }))
+  }
+
+  const handleNextPage = useCallback(() => {
+    // Save current page answers to main answers
+    setAnswers(prev => ({
+      ...prev,
+      ...currentPageAnswers
+    }))
+
+    if (currentPageIndex < TOTAL_PAGES - 1) {
+      const newPageIndex = currentPageIndex + 1
+      setCurrentPageIndex(newPageIndex)
+      
+      // Clear current page answers for the new page
+      setCurrentPageAnswers({})
+    } else {
+      handleSubmitTest()
+    }
+  }, [currentPageAnswers, currentPageIndex])
+
+  const handlePreviousPage = useCallback(() => {
+    if (currentPageIndex > 0) {
+      const newPageIndex = currentPageIndex - 1
+      setCurrentPageIndex(newPageIndex)
+      
+      // Restore answers for the previous page
+      const startIndex = newPageIndex * QUESTIONS_PER_PAGE
+      const endIndex = startIndex + QUESTIONS_PER_PAGE
+      const previousPageQuestions = questions.slice(startIndex, endIndex)
+      const previousPageAnswers: Record<number, number> = {}
+      
+      previousPageQuestions.forEach(question => {
+        if (answers[question.id] !== undefined) {
+          previousPageAnswers[question.id] = answers[question.id]
+        }
+      })
+      
+      setCurrentPageAnswers(previousPageAnswers)
+    }
+  }, [currentPageIndex, answers])
+
+  const handleSubmitTest = useCallback(async () => {
     const results = calculateResults(answers)
     setTestResults(results)
     await saveTestResultToDatabase(results)
     setCurrentStep('results')
-  }
+  }, [answers])
 
   const handleRestartTest = () => {
     setCurrentStep('intro')
-    setCurrentQuestionIndex(0)
+    setCurrentPageIndex(0)
     setAnswers({})
+    setCurrentPageAnswers({})
     setTestResults([])
     setGender('')
   }
@@ -287,7 +317,63 @@ export default function DiscoverPage() {
   }
 
   if (!isAuthenticated) {
-    return <ProtectedRoute />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+          <p className="text-sm text-gray-500 mt-2">Please wait...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading state while fetching questions
+  if (questionsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading questions...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if questions failed to load
+  if (questionsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Questions</h1>
+          <p className="text-gray-600 mb-6">{questionsError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if no questions are available
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">No Questions Available</h1>
+          <p className="text-gray-600 mb-6">There are no questions available for the test.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -328,9 +414,13 @@ export default function DiscoverPage() {
 
       {currentStep === 'test' && (
         <TestQuestions
-          questions={getCurrentQuestions()}
-          currentQuestionIndex={currentQuestionIndex}
-          onNextQuestion={handleNextQuestion}
+          questions={getCurrentPageQuestions()}
+          currentPageIndex={currentPageIndex}
+          totalPages={TOTAL_PAGES}
+          onNextPage={handleNextPage}
+          onPreviousPage={handlePreviousPage}
+          onAnswerSelect={handleAnswerSelect}
+          currentPageAnswers={currentPageAnswers}
         />
       )}
 

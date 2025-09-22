@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
@@ -23,9 +24,16 @@ export default function Header() {
         <nav className="flex items-center justify-between">
           {/* Left side - Logo/Title */}
           <div className="flex items-center">
-            <Link href="/" className="text-lg sm:text-xl font-bold text-gray-800 hover:text-blue-600 transition duration-200">
-              <span className="hidden sm:inline">MindMatrix</span>
-              <span className="sm:hidden">MindMatrix</span>
+            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition duration-200">
+              <Image
+                src="/logo.png"
+                alt="MindMatrix Logo"
+                width={80}
+                height={80}
+                className="w-16 h-16 sm:w-20 sm:h-20"
+                priority
+              />
+              <span className="text-lg sm:text-xl font-bold text-gray-800">MindMatrix</span>
             </Link>
           </div>
 
@@ -91,12 +99,6 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/dashboard"
-                  className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium"
-                >
-                  Dashboard
-                </Link>
                 <span className="text-gray-600 hidden lg:inline">Welcome, {user?.name || user?.email}</span>
                 <button
                   onClick={logout}
@@ -214,13 +216,6 @@ export default function Header() {
                     <div className="text-sm text-gray-500">
                       Welcome, {user?.name || user?.email}
                     </div>
-                    <Link
-                      href="/dashboard"
-                      className="text-gray-600 hover:text-blue-600 transition duration-200 font-medium py-2"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
                     <button
                       onClick={() => {
                         logout()

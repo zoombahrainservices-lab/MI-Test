@@ -7,6 +7,12 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'MindMatrix - Multiple Intelligence Assessment',
   description: 'Discover your multiple intelligence strengths with our comprehensive assessment tool',
+  viewport: 'width=device-width, initial-scale=1',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({

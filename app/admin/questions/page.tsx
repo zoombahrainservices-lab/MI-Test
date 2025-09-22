@@ -29,12 +29,13 @@ export default function QuestionsPage() {
   const categories = [
     'Linguistic',
     'Logical-Mathematical', 
-    'Spatial',
-    'Musical',
+    'Musical & Creative',
     'Bodily-Kinesthetic',
     'Interpersonal',
     'Intrapersonal',
-    'Naturalist'
+    'Naturalistic',
+    'Existential/Spiritual',
+    'Spatial'
   ]
 
   useEffect(() => {
