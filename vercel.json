@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "GOOGLE_CLIENT_ID": "@google_client_id",
+    "GOOGLE_CLIENT_SECRET": "@google_client_secret"
+  },
+  "build": {
+    "env": {
+      "PRISMA_GENERATE_DATAPROXY": "true"
+    }
+  },
+  "deployment": {
+    "force": true
+  }
+}
