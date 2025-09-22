@@ -24,8 +24,14 @@ export default function TestQuestions({
 }: TestQuestionsProps) {
   const [allAnswersSelected, setAllAnswersSelected] = useState(false)
   const [isAutoAdvancing, setIsAutoAdvancing] = useState(false)
+  const [questionKey, setQuestionKey] = useState(0)
 
   const progress = ((currentPageIndex + 1) / totalPages) * 100
+
+  // Update question key for animation when page changes
+  useEffect(() => {
+    setQuestionKey(currentPageIndex)
+  }, [currentPageIndex])
 
   // Check if all questions on current page are answered and auto-advance
   useEffect(() => {
@@ -91,17 +97,14 @@ export default function TestQuestions({
 
         {/* Progress Bar */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs sm:text-sm font-medium text-gray-700">
-              Page {currentPageIndex + 1} of {totalPages}
-            </span>
-            <span className="text-xs sm:text-sm font-medium text-gray-700">
-              {Math.round(progress)}%
-            </span>
+          <div className="flex justify-center items-center mb-4">
+            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-sm sm:text-base animate-pulse">
+              {Math.round(progress)}% Complete
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div 
-              className="h-2 rounded-full transition-all duration-300 bg-blue-500"
+              className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-700 ease-out animate-pulse"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -110,16 +113,28 @@ export default function TestQuestions({
         {/* Questions */}
         <div className="space-y-6 sm:space-y-8">
           {questions.map((question, questionIndex) => (
-            <div key={question.id} className="mb-6 sm:mb-8">
+            <div 
+              key={`${question.id}-${questionKey}`} 
+              className="mb-6 sm:mb-8 animate-fade-in-up"
+              style={{
+                animation: 'fadeInUp 0.6s ease-out'
+              }}
+            >
               <div className="mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 leading-relaxed">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 leading-relaxed animate-fade-in">
                   {question.text}
                 </h3>
               </div>
               
               <div className="flex justify-center items-start space-x-4 sm:space-x-6 md:space-x-8 lg:space-x-12 xl:space-x-16 py-6 sm:py-8">
                 {question.options.map((option, optionIndex) => (
-                  <div key={optionIndex} className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4">
+                  <div 
+                    key={optionIndex} 
+                    className="flex flex-col items-center space-y-2 sm:space-y-3 md:space-y-4 animate-fade-in"
+                    style={{
+                      animation: `fadeInUp 0.6s ease-out ${optionIndex * 0.1}s both`
+                    }}
+                  >
                     <label className="cursor-pointer">
                       <input
                         type="radio"
@@ -130,9 +145,9 @@ export default function TestQuestions({
                         className="sr-only"
                       />
                       <div 
-                        className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full border-2 sm:border-3 md:border-4 transition-all duration-200 hover:scale-105 sm:hover:scale-110 ${
+                        className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full border-2 sm:border-3 md:border-4 transition-all duration-300 hover:scale-110 hover:shadow-lg ${
                           currentPageAnswers[question.id] === optionIndex 
-                            ? getSelectedCircleStyles(optionIndex)
+                            ? getSelectedCircleStyles(optionIndex) + ' animate-bounce'
                             : getUnselectedCircleStyles(optionIndex)
                         }`}
                       >
