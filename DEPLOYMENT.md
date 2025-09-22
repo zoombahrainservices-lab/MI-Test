@@ -43,3 +43,4 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 - **Wrong Port**: Make sure DATABASE_URL uses port `5432`, not `6543`
 - **Missing Password**: Replace `[YOUR-PASSWORD]` with your actual Supabase database password
 - **Wrong Domain**: Use `mi-test-eight.vercel.app` as your NEXTAUTH_URL
+- **TypeScript Errors**: Ensure all TypeScript errors are resolved before deployment
