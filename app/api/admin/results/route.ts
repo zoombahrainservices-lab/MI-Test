@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: result.id,
-        userEmail: result.users?.email || 'Unknown',
+        userEmail: (result.users as any)?.email || 'Unknown',
         completedAt: result.created_at,
         easyScore,
         mediumScore,
