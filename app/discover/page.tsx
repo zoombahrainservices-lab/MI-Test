@@ -33,7 +33,7 @@ export default function DiscoverPage() {
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [currentPageAnswers, setCurrentPageAnswers] = useState<Record<number, number>>({})
   const [questions, setQuestions] = useState<Question[]>([])
-  const [questionsLoading, setQuestionsLoading] = useState(true)
+  const [questionsLoading, setQuestionsLoading] = useState(false)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
 
   // Constants for pagination
