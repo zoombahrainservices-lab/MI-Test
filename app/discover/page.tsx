@@ -22,7 +22,6 @@ export interface TestResult {
   percentage: number
 }
 
-
 export default function DiscoverPage() {
   const { isAuthenticated, loading, user } = useAuth()
   const [currentStep, setCurrentStep] = useState<'intro' | 'gender' | 'test' | 'results'>('intro')
@@ -82,84 +81,55 @@ export default function DiscoverPage() {
         throw new Error('No authentication token found')
       }
 
-      // Convert results to the format expected by the API
-      const scores = {
-        linguistic: results.find(r => r.category === 'Linguistic')?.score || 0,
-        logical: results.find(r => r.category === 'Logical-Mathematical')?.score || 0,
-        musicalCreative: results.find(r => r.category === 'Musical & Creative')?.score || 0,
-        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.score || 0,
-        interpersonal: results.find(r => r.category === 'Interpersonal')?.score || 0,
-        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.score || 0,
-        naturalistic: results.find(r => r.category === 'Naturalistic')?.score || 0,
-        existential: results.find(r => r.category === 'Existential/Spiritual')?.score || 0,
-        spatial: results.find(r => r.category === 'Spatial')?.score || 0,
-      }
-
-      const percentages = {
-        linguistic: results.find(r => r.category === 'Linguistic')?.percentage || 0,
-        logical: results.find(r => r.category === 'Logical-Mathematical')?.percentage || 0,
-        musicalCreative: results.find(r => r.category === 'Musical & Creative')?.percentage || 0,
-        bodily: results.find(r => r.category === 'Bodily-Kinesthetic')?.percentage || 0,
-        interpersonal: results.find(r => r.category === 'Interpersonal')?.percentage || 0,
-        intrapersonal: results.find(r => r.category === 'Intrapersonal')?.percentage || 0,
-        naturalistic: results.find(r => r.category === 'Naturalistic')?.percentage || 0,
-        existential: results.find(r => r.category === 'Existential/Spiritual')?.percentage || 0,
-        spatial: results.find(r => r.category === 'Spatial')?.percentage || 0,
-      }
-
-      const topIntelligence = results.reduce((prev, current) => (prev.percentage > current.percentage) ? prev : current).category
-      const sortedResults = results.sort((a, b) => b.percentage - a.percentage)
-      const secondIntelligence = sortedResults[1]?.category || ''
-      const thirdIntelligence = sortedResults[2]?.category || ''
-
       const response = await fetch('/api/test-results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        credentials: 'include',
         body: JSON.stringify({
-          answers: answers,
-          scores,
-          percentages,
-          topIntelligence,
-          secondIntelligence,
-          thirdIntelligence,
-          level: 'combined'
+          answers: Object.entries(answers).map(([questionId, answer]) => ({
+            questionId: parseInt(questionId),
+            answer: answer + 1, // Convert 0-4 to 1-5
+            category: questions.find(q => q.id === parseInt(questionId))?.category || 'unknown',
+            difficulty: questions.find(q => q.id === parseInt(questionId))?.difficulty || 'easy'
+          })),
+          results: results,
+          gender: gender
         })
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to save test results: ${response.statusText}`)
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save test results')
       }
 
-      console.log(`Test results saved:`, await response.json())
+      const savedResult = await response.json()
+      console.log('Test results saved successfully:', savedResult)
     } catch (error) {
       console.error('Error saving test results:', error)
+      // Don't throw the error, just log it so the user can still see results
     } finally {
       setSaving(false)
     }
   }
 
+  const calculateResults = (answers: Record<number, number>): TestResult[] => {
+    const categories = [
+      'linguistic',
+      'logical', 
+      'spatial',
+      'musical',
+      'bodily',
+      'interpersonal',
+      'intrapersonal',
+      'naturalist'
+    ]
 
-  const calculateResults = (answers: Record<number, number>) => {
     const categoryScores: Record<string, number> = {}
     const categoryCounts: Record<string, number> = {}
 
-    // Initialize scores for all 9 intelligence types
-    const categories = [
-      'Linguistic',
-      'Logical-Mathematical', 
-      'Musical & Creative',
-      'Bodily-Kinesthetic',
-      'Interpersonal',
-      'Intrapersonal',
-      'Naturalistic',
-      'Existential/Spiritual',
-      'Spatial'
-    ]
-
+    // Initialize scores and counts
     categories.forEach(category => {
       categoryScores[category] = 0
       categoryCounts[category] = 0
@@ -169,7 +139,8 @@ export default function DiscoverPage() {
     Object.entries(answers).forEach(([questionId, answer]) => {
       const question = questions.find(q => q.id === parseInt(questionId))
       if (question) {
-        categoryScores[question.category] += answer + 1 // Convert 0-4 to 1-5
+        // Convert 0-4 to 1-5
+        categoryScores[question.category] += answer + 1
         categoryCounts[question.category] += 1
       }
     })
@@ -190,7 +161,6 @@ export default function DiscoverPage() {
 
     return results.sort((a, b) => b.percentage - a.percentage)
   }
-
 
   const handleStartTest = () => {
     setCurrentStep('gender')
@@ -258,28 +228,26 @@ export default function DiscoverPage() {
       const newPageIndex = currentPageIndex - 1
       setCurrentPageIndex(newPageIndex)
       
-      // Restore answers for the previous page
-      const startIndex = newPageIndex * QUESTIONS_PER_PAGE
-      const endIndex = startIndex + QUESTIONS_PER_PAGE
-      const previousPageQuestions = questions.slice(startIndex, endIndex)
-      const previousPageAnswers: Record<number, number> = {}
-      
-      previousPageQuestions.forEach(question => {
-        if (answers[question.id] !== undefined) {
-          previousPageAnswers[question.id] = answers[question.id]
-        }
-      })
-      
-      setCurrentPageAnswers(previousPageAnswers)
+      // Clear current page answers for the new page
+      setCurrentPageAnswers({})
     }
-  }, [currentPageIndex, answers])
+  }, [currentPageIndex])
 
-  const handleSubmitTest = useCallback(async () => {
-    const results = calculateResults(answers)
+  const handleSubmitTest = async () => {
+    // Save final answers
+    const finalAnswers = { ...answers, ...currentPageAnswers }
+    setAnswers(finalAnswers)
+
+    // Calculate results
+    const results = calculateResults(finalAnswers)
     setTestResults(results)
+
+    // Save to database
     await saveTestResultToDatabase(results)
+
+    // Move to results step
     setCurrentStep('results')
-  }, [answers])
+  }
 
   const handleRestartTest = () => {
     setCurrentStep('intro')
@@ -290,161 +258,147 @@ export default function DiscoverPage() {
     setGender('')
   }
 
-  const getIntelligenceDescription = (category: string) => {
+  const getIntelligenceDescription = (category: string): string => {
     const descriptions: Record<string, string> = {
-      'Linguistic': 'Word smart - you excel with language, reading, writing, and communication',
-      'Logical-Mathematical': 'Number smart - you excel with logic, reasoning, and mathematical concepts',
-      'Musical & Creative': 'Creative smart - you excel with art, music, design, and creative expression',
-      'Bodily-Kinesthetic': 'Body smart - you excel with physical movement and hands-on learning',
-      'Interpersonal': 'People smart - you excel with understanding and relating to others',
-      'Intrapersonal': 'Self smart - you excel with self-awareness and personal reflection',
-      'Naturalistic': 'Nature smart - you excel with understanding natural systems and environments',
-      'Existential/Spiritual': 'Spiritual smart - you excel with meaning, values, and ethical reasoning',
-      'Spatial': 'Picture smart - you excel with visual and spatial relationships'
+      linguistic: 'Linguistic intelligence involves sensitivity to spoken and written language, the ability to learn languages, and the capacity to use language to accomplish certain goals.',
+      logical: 'Logical-mathematical intelligence consists of the capacity to analyze problems logically, carry out mathematical operations, and investigate issues scientifically.',
+      spatial: 'Spatial intelligence features the potential to recognize and manipulate the patterns of wide space as well as the patterns of more confined areas.',
+      musical: 'Musical intelligence involves skill in the performance, composition, and appreciation of musical patterns.',
+      bodily: 'Bodily-kinesthetic intelligence entails the potential of using one\'s whole body or parts of the body to solve problems.',
+      interpersonal: 'Interpersonal intelligence is concerned with the capacity to understand the intentions, motivations, and desires of other people.',
+      intrapersonal: 'Intrapersonal intelligence entails the capacity to understand oneself, to appreciate one\'s feelings, fears, and motivations.',
+      naturalist: 'Naturalist intelligence enables human beings to recognize, categorize, and draw upon certain features of the environment.'
     }
-    return descriptions[category] || 'Unknown intelligence type'
+    return descriptions[category] || 'This intelligence type represents your cognitive strengths in this area.'
   }
 
+  // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+      <main className="min-h-screen">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
+      </main>
     )
   }
 
+  // Show error state if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to login...</p>
-          <p className="text-sm text-gray-500 mt-2">Please wait...</p>
+      <main className="min-h-screen">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">Access Denied</h1>
+            <p className="text-gray-600 mb-6">You need to be logged in to access this page.</p>
+            <Link 
+              href="/login" 
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Login
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     )
   }
 
-  // Show loading state while fetching questions
+  // Show questions loading state
   if (questionsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading questions...</p>
+      <main className="min-h-screen">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading questions...</p>
+          </div>
         </div>
-      </div>
+      </main>
     )
   }
 
-  // Show error state if questions failed to load
+  // Show questions error state
   if (questionsError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Questions</h1>
-          <p className="text-gray-600 mb-6">{questionsError}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200"
-          >
-            Retry
-          </button>
+      <main className="min-h-screen">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-3xl font-bold text-red-600 mb-4">Error Loading Questions</h1>
+            <p className="text-gray-600 mb-6">{questionsError}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
-    )
-  }
-
-  // Show error if no questions are available
-  if (questions.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">No Questions Available</h1>
-          <p className="text-gray-600 mb-6">There are no questions available for the test.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <main className="min-h-screen">
       <Header />
-      {currentStep === 'intro' && (
-        <TestIntro onStartTest={handleStartTest} />
-      )}
+      <div className="container mx-auto px-4 py-8">
+        {currentStep === 'intro' && (
+          <TestIntro onStartTest={handleStartTest} />
+        )}
 
-      {currentStep === 'gender' && (
-        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
-            <div className="text-center">
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Before we begin...
-              </h2>
-              <p className="mt-2 text-sm text-gray-600">
-                Please select your gender to help us provide more personalized results
-              </p>
-            </div>
+        {currentStep === 'gender' && (
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">Before we begin...</h1>
+            <p className="text-gray-600 mb-8">Please select your gender to help us provide more personalized results</p>
+            
             <div className="space-y-4">
               <button
                 onClick={() => handleGenderSelect('male')}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+                className="w-full max-w-xs mx-auto block bg-blue-600 text-white py-4 px-8 rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
               >
                 Male
               </button>
               <button
                 onClick={() => handleGenderSelect('female')}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition duration-200"
+                className="w-full max-w-xs mx-auto block bg-pink-600 text-white py-4 px-8 rounded-lg hover:bg-pink-700 transition-colors text-lg font-medium"
               >
                 Female
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {currentStep === 'test' && (
-        <TestQuestions
-          questions={getCurrentPageQuestions()}
-          currentPageIndex={currentPageIndex}
-          totalPages={TOTAL_PAGES}
-          onNextPage={handleNextPage}
-          onPreviousPage={handlePreviousPage}
-          onAnswerSelect={handleAnswerSelect}
-          currentPageAnswers={currentPageAnswers}
-        />
-      )}
+        {currentStep === 'test' && (
+          <TestQuestions
+            questions={getCurrentPageQuestions()}
+            currentPageIndex={currentPageIndex}
+            totalPages={TOTAL_PAGES}
+            onNextPage={handleNextPage}
+            onPreviousPage={handlePreviousPage}
+            onAnswerSelect={handleAnswerSelect}
+            currentPageAnswers={currentPageAnswers}
+          />
+        )}
 
-      {currentStep === 'results' && (
-        <TestResults
-          results={testResults}
-          level="Complete"
-          onMoveToNextLevel={() => {}}
-          onRestartTest={handleRestartTest}
-          showNextLevel={false}
-          showPrint={true}
-          timing={null}
-          getIntelligenceDescription={getIntelligenceDescription}
-        />
-      )}
-
-      {saving && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Saving your results...</p>
-          </div>
-        </div>
-      )}
-    </div>
+        {currentStep === 'results' && (
+          <TestResults
+            results={testResults}
+            level="combined"
+            onMoveToNextLevel={() => {}}
+            onRestartTest={handleRestartTest}
+            showNextLevel={false}
+            showPrint={true}
+            timing={null}
+            getIntelligenceDescription={getIntelligenceDescription}
+          />
+        )}
+      </div>
+    </main>
   )
 }
