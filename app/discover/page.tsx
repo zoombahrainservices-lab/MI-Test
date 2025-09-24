@@ -40,30 +40,8 @@ export default function DiscoverPage() {
   const QUESTIONS_PER_PAGE = 1
   const TOTAL_PAGES = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_PAGE) : 0
 
-  // Fetch questions from database
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setQuestionsLoading(true)
-        setQuestionsError(null)
-        
-        const response = await fetch('/api/questions')
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions')
-        }
-        
-        const data = await response.json()
-        setQuestions(data.questions || [])
-      } catch (error) {
-        console.error('Error fetching questions:', error)
-        setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
-      } finally {
-        setQuestionsLoading(false)
-      }
-    }
-
-    fetchQuestions()
-  }, [])
+  // Questions will be fetched when user selects gender
+  // No initial fetch - questions are loaded fresh each time gender is selected
 
   const saveTestResultToDatabase = async (results: TestResult[]) => {
     if (!user) {
@@ -196,8 +174,30 @@ export default function DiscoverPage() {
     setCurrentStep('gender')
   }
 
-  const handleGenderSelect = (selectedGender: 'male' | 'female') => {
+  const handleGenderSelect = async (selectedGender: 'male' | 'female') => {
     setGender(selectedGender)
+    
+    // Fetch fresh questions with new shuffle each time gender is selected
+    try {
+      setQuestionsLoading(true)
+      setQuestionsError(null)
+      
+      const response = await fetch('/api/questions')
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions')
+      }
+      
+      const data = await response.json()
+      setQuestions(data.questions || [])
+      
+      console.log(`🔄 Fresh questions fetched for ${selectedGender} user: ${data.questions?.length || 0} questions`)
+    } catch (error) {
+      console.error('Error fetching fresh questions:', error)
+      setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
+    } finally {
+      setQuestionsLoading(false)
+    }
+    
     setCurrentStep('test')
     setCurrentPageIndex(0)
     setAnswers({})
