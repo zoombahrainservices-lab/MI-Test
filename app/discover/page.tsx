@@ -33,15 +33,37 @@ export default function DiscoverPage() {
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [currentPageAnswers, setCurrentPageAnswers] = useState<Record<number, number>>({})
   const [questions, setQuestions] = useState<Question[]>([])
-  const [questionsLoading, setQuestionsLoading] = useState(false)
+  const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
 
   // Constants for pagination
   const QUESTIONS_PER_PAGE = 1
   const TOTAL_PAGES = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_PAGE) : 0
 
-  // Questions will be fetched when user selects gender
-  // No initial fetch - questions are loaded fresh each time gender is selected
+  // Fetch questions from database
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setQuestionsLoading(true)
+        setQuestionsError(null)
+        
+        const response = await fetch('/api/questions')
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions')
+        }
+        
+        const data = await response.json()
+        setQuestions(data.questions || [])
+      } catch (error) {
+        console.error('Error fetching questions:', error)
+        setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
+      } finally {
+        setQuestionsLoading(false)
+      }
+    }
+
+    fetchQuestions()
+  }, [])
 
   const saveTestResultToDatabase = async (results: TestResult[]) => {
     if (!user) {
@@ -174,37 +196,12 @@ export default function DiscoverPage() {
     setCurrentStep('gender')
   }
 
-  const handleGenderSelect = async (selectedGender: 'male' | 'female') => {
+  const handleGenderSelect = (selectedGender: 'male' | 'female') => {
     setGender(selectedGender)
-    
-    // Fetch fresh questions with new shuffle each time gender is selected
-    try {
-      setQuestionsLoading(true)
-      setQuestionsError(null)
-      
-      const response = await fetch('/api/questions')
-      if (!response.ok) {
-        throw new Error('Failed to fetch questions')
-      }
-      
-      const data = await response.json()
-      setQuestions(data.questions || [])
-      
-      console.log(`🔄 Fresh questions fetched for ${selectedGender} user: ${data.questions?.length || 0} questions`)
-      console.log(`📋 Questions state updated:`, data.questions?.slice(0, 3).map(q => ({ id: q.id, text: q.text.substring(0, 50) + '...' })))
-      
-      // Only move to test step AFTER questions are successfully loaded
-      setCurrentStep('test')
-      setCurrentPageIndex(0)
-      setAnswers({})
-      setCurrentPageAnswers({})
-    } catch (error) {
-      console.error('Error fetching fresh questions:', error)
-      setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
-      // Don't move to test step if questions failed to load
-    } finally {
-      setQuestionsLoading(false)
-    }
+    setCurrentStep('test')
+    setCurrentPageIndex(0)
+    setAnswers({})
+    setCurrentPageAnswers({})
   }
 
   // Initialize currentPageAnswers when page changes (but not when answers change to avoid loops)
@@ -223,23 +220,12 @@ export default function DiscoverPage() {
       
       setCurrentPageAnswers(pageAnswers)
     }
-  }, [currentPageIndex, currentStep, questions]) // Added 'questions' to re-run when questions are loaded
+  }, [currentPageIndex, currentStep]) // Removed 'answers' from dependencies to prevent loops
 
   const getCurrentPageQuestions = () => {
     const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
     const endIndex = startIndex + QUESTIONS_PER_PAGE
-    const currentQuestions = questions.slice(startIndex, endIndex)
-    
-    console.log(`📄 getCurrentPageQuestions:`, {
-      totalQuestions: questions.length,
-      currentPageIndex,
-      startIndex,
-      endIndex,
-      currentQuestionsCount: currentQuestions.length,
-      currentQuestions: currentQuestions.map(q => ({ id: q.id, text: q.text.substring(0, 30) + '...' }))
-    })
-    
-    return currentQuestions
+    return questions.slice(startIndex, endIndex)
   }
 
   const handleAnswerSelect = (questionId: number, answer: number) => {
@@ -426,7 +412,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {currentStep === 'test' && !questionsLoading && (
+      {currentStep === 'test' && (
         <TestQuestions
           questions={getCurrentPageQuestions()}
           currentPageIndex={currentPageIndex}
