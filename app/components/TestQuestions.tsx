@@ -91,6 +91,21 @@ export default function TestQuestions({
 
 
 
+  // Handle case when no questions are available
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 mt-4 sm:mt-8">
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading questions...</p>
+            <p className="text-sm text-gray-500 mt-2">Please wait while we prepare your test</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-4 mt-4 sm:mt-8">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">

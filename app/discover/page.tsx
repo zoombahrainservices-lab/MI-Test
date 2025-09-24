@@ -191,6 +191,7 @@ export default function DiscoverPage() {
       setQuestions(data.questions || [])
       
       console.log(`🔄 Fresh questions fetched for ${selectedGender} user: ${data.questions?.length || 0} questions`)
+      console.log(`📋 Questions state updated:`, data.questions?.slice(0, 3).map(q => ({ id: q.id, text: q.text.substring(0, 50) + '...' })))
       
       // Only move to test step AFTER questions are successfully loaded
       setCurrentStep('test')
@@ -227,7 +228,18 @@ export default function DiscoverPage() {
   const getCurrentPageQuestions = () => {
     const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
     const endIndex = startIndex + QUESTIONS_PER_PAGE
-    return questions.slice(startIndex, endIndex)
+    const currentQuestions = questions.slice(startIndex, endIndex)
+    
+    console.log(`📄 getCurrentPageQuestions:`, {
+      totalQuestions: questions.length,
+      currentPageIndex,
+      startIndex,
+      endIndex,
+      currentQuestionsCount: currentQuestions.length,
+      currentQuestions: currentQuestions.map(q => ({ id: q.id, text: q.text.substring(0, 30) + '...' }))
+    })
+    
+    return currentQuestions
   }
 
   const handleAnswerSelect = (questionId: number, answer: number) => {
@@ -414,7 +426,7 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {currentStep === 'test' && (
+      {currentStep === 'test' && !questionsLoading && (
         <TestQuestions
           questions={getCurrentPageQuestions()}
           currentPageIndex={currentPageIndex}
