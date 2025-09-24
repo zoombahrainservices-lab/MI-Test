@@ -68,11 +68,11 @@ export default function TestQuestions({
     // Color coding based on actual option order: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"]
     // Selected circles are filled with same color at 30% transparency
     switch (optionIndex) {
-      case 0: return 'border-green-600 bg-green-600/30'  // Strongly Agree - green with 30% opacity
-      case 1: return 'border-green-500 bg-green-500/30'  // Agree - light green with 30% opacity
+      case 0: return 'border-red-600 bg-red-600/30'  // Strongly Agree - red with 30% opacity
+      case 1: return 'border-red-500 bg-red-500/30'  // Agree - light red with 30% opacity
       case 2: return 'border-gray-500 bg-gray-500/30'    // Neutral - gray with 30% opacity
-      case 3: return 'border-red-500 bg-red-500/30'      // Disagree - light red with 30% opacity
-      case 4: return 'border-red-600 bg-red-600/30'      // Strongly Disagree - dark red with 30% opacity
+      case 3: return 'border-green-500 bg-green-500/30'      // Disagree - light green with 30% opacity
+      case 4: return 'border-green-600 bg-green-600/30'      // Strongly Disagree - dark green with 30% opacity
       default: return 'border-gray-500 bg-gray-500/30'
     }
   }
@@ -80,11 +80,11 @@ export default function TestQuestions({
   const getUnselectedCircleStyles = (optionIndex: number) => {
     // Unselected circles show only outline (border) with transparent background
     switch (optionIndex) {
-      case 0: return 'border-green-600 bg-transparent'  // Strongly Agree - green outline
-      case 1: return 'border-green-500 bg-transparent'  // Agree - light green outline
+      case 0: return 'border-red-600 bg-transparent'  // Strongly Agree - red outline
+      case 1: return 'border-red-500 bg-transparent'  // Agree - light red outline
       case 2: return 'border-gray-500 bg-transparent'   // Neutral - gray outline
-      case 3: return 'border-red-500 bg-transparent'    // Disagree - light red outline
-      case 4: return 'border-red-600 bg-transparent'    // Strongly Disagree - dark red outline
+      case 3: return 'border-green-500 bg-transparent'    // Disagree - light green outline
+      case 4: return 'border-green-600 bg-transparent'    // Strongly Disagree - dark green outline
       default: return 'border-gray-500 bg-transparent'
     }
   }
