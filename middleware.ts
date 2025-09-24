@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
   const isValidToken = token && token.length >= 100 && token.startsWith('eyJ')
 
   // Protected routes that require authentication
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/discover')) {
+  if (pathname.startsWith('/discover')) {
     if (!isValidToken) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
@@ -29,7 +29,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
     '/discover/:path*',
     '/login',
     '/signup'
