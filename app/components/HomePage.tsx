@@ -169,7 +169,7 @@ export default function HomePage() {
           <div className="text-center">
             <div className="bg-blue-600 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold mx-auto mb-3 sm:mb-4">1</div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Take the Test</h3>
-            <p className="text-sm sm:text-base text-gray-600">Answer 100 carefully crafted questions about your preferences and abilities.</p>
+            <p className="text-sm sm:text-base text-gray-600">Answer 50 carefully crafted questions about your preferences and abilities.</p>
           </div>
           <div className="text-center">
             <div className="bg-blue-600 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold mx-auto mb-3 sm:mb-4">2</div>

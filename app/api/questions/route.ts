@@ -3,6 +3,7 @@ import { getAllQuestions } from '@/lib/db-operations'
 
 export async function GET() {
   try {
+    // getAllQuestions() returns questions in random order (shuffled)
     const questions = await getAllQuestions()
     return NextResponse.json({ questions })
   } catch (error) {

@@ -192,6 +192,33 @@ export async function getAllQuestions() {
     throw new Error(`Failed to get questions: ${error.message}`)
   }
 
+  // Shuffle the questions array using Fisher-Yates algorithm
+  const shuffledQuestions = [...questions]
+  for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]]
+  }
+
+  // Select only 50 random questions from the shuffled 74
+  const selectedQuestions = shuffledQuestions.slice(0, 50)
+  
+  console.log(`🔄 Questions shuffled: ${questions.length} total, selected ${selectedQuestions.length} random questions`)
+  console.log(`📋 First question ID: ${selectedQuestions[0]?.id}, Text: "${selectedQuestions[0]?.text?.substring(0, 50)}..."`)
+  
+  return selectedQuestions
+}
+
+// Get questions in original order for admin management
+export async function getAllQuestionsForAdmin() {
+  const { data: questions, error } = await supabase
+    .from('questions')
+    .select('*')
+    .order('id', { ascending: true })
+
+  if (error) {
+    throw new Error(`Failed to get questions: ${error.message}`)
+  }
+
   return questions
 }
 

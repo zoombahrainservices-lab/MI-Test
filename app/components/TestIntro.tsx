@@ -33,7 +33,7 @@ export default function TestIntro({ onStartTest }: TestIntroProps) {
         <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
           <h3 className="text-lg sm:text-xl font-semibold text-green-800 mb-2 sm:mb-3">Test Details</h3>
           <ul className="space-y-1.5 sm:space-y-2 text-sm sm:text-base text-gray-700">
-            <li>• 100 carefully crafted questions covering all 9 intelligence types</li>
+            <li>• 50 carefully crafted questions covering all 9 intelligence types</li>
             <li>• No time pressure - take your time to answer thoughtfully</li>
             <li>• No right or wrong answers</li>
             <li>• Comprehensive results showing your intelligence profile</li>
