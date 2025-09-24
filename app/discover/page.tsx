@@ -191,17 +191,19 @@ export default function DiscoverPage() {
       setQuestions(data.questions || [])
       
       console.log(`🔄 Fresh questions fetched for ${selectedGender} user: ${data.questions?.length || 0} questions`)
+      
+      // Only move to test step AFTER questions are successfully loaded
+      setCurrentStep('test')
+      setCurrentPageIndex(0)
+      setAnswers({})
+      setCurrentPageAnswers({})
     } catch (error) {
       console.error('Error fetching fresh questions:', error)
       setQuestionsError(error instanceof Error ? error.message : 'Failed to fetch questions')
+      // Don't move to test step if questions failed to load
     } finally {
       setQuestionsLoading(false)
     }
-    
-    setCurrentStep('test')
-    setCurrentPageIndex(0)
-    setAnswers({})
-    setCurrentPageAnswers({})
   }
 
   // Initialize currentPageAnswers when page changes (but not when answers change to avoid loops)
@@ -220,7 +222,7 @@ export default function DiscoverPage() {
       
       setCurrentPageAnswers(pageAnswers)
     }
-  }, [currentPageIndex, currentStep]) // Removed 'answers' from dependencies to prevent loops
+  }, [currentPageIndex, currentStep, questions]) // Added 'questions' to re-run when questions are loaded
 
   const getCurrentPageQuestions = () => {
     const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
