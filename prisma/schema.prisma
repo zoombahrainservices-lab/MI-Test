@@ -81,6 +81,21 @@ model Question {
   @@map("questions")
 }
 
+// Multiple-choice knowledge questions with one or more correct answers
+model MCQQuestion {
+  id              Int      @id @default(autoincrement())
+  text            String
+  options         Json     // Array<string>
+  correctAnswers  Json     @map("correct_answers") // Array<number> of option indices
+  explanation     String?  // Optional explanation
+  difficulty      String   @default("easy")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("mcq_questions")
+}
+
 model Admin {
   id        String   @id @default(cuid())
   email     String   @unique

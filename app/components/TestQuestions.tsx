@@ -33,29 +33,28 @@ export default function TestQuestions({
     setQuestionKey(currentPageIndex)
   }, [currentPageIndex])
 
-  // Check if all questions on current page are answered and auto-advance
+  // Track whether all questions on current page are answered
   useEffect(() => {
     const allAnswered = questions.every(question => 
       currentPageAnswers[question.id] !== undefined
     )
     setAllAnswersSelected(allAnswered)
-    
-    // Only auto-advance if all questions are answered AND we have at least one answer
-    if (allAnswered && questions.length > 0 && Object.keys(currentPageAnswers).length > 0) {
-      setIsAutoAdvancing(true)
-      const timer = setTimeout(() => {
-        onNextPage()
-        setIsAutoAdvancing(false)
-        // Scroll to top when advancing to next page
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 1500) // 1.5 second delay to show completion
-      
-      return () => clearTimeout(timer)
-    }
   }, [questions, currentPageAnswers])
 
   const handleAnswerSelect = (questionId: number, answerIndex: number) => {
     onAnswerSelect(questionId, answerIndex)
+
+    // After selecting, check if all questions on this page are answered, then advance
+    const answeredNow: Record<number, number> = { ...currentPageAnswers, [questionId]: answerIndex }
+    const allAnswered = questions.every(q => answeredNow[q.id] !== undefined)
+    if (allAnswered && questions.length > 0) {
+      setIsAutoAdvancing(true)
+      setTimeout(() => {
+        onNextPage()
+        setIsAutoAdvancing(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 800)
+    }
   }
 
 
@@ -64,27 +63,33 @@ export default function TestQuestions({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const getSelectedCircleStyles = (optionIndex: number) => {
+  const getSelectedCircleStyles = (optionIndex: number, isMcq: boolean) => {
+    if (isMcq) {
+      return 'border-gray-600 bg-gray-600/30'
+    }
     // Color coding based on actual option order: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"]
     // Selected circles are filled with same color at 30% transparency
     switch (optionIndex) {
-      case 0: return 'border-red-600 bg-red-600/30'  // Strongly Agree - red with 30% opacity
-      case 1: return 'border-red-500 bg-red-500/30'  // Agree - light red with 30% opacity
-      case 2: return 'border-gray-500 bg-gray-500/30'    // Neutral - gray with 30% opacity
-      case 3: return 'border-green-500 bg-green-500/30'      // Disagree - light green with 30% opacity
-      case 4: return 'border-green-600 bg-green-600/30'      // Strongly Disagree - dark green with 30% opacity
+      case 0: return 'border-red-600 bg-red-600/30'
+      case 1: return 'border-red-500 bg-red-500/30'
+      case 2: return 'border-gray-500 bg-gray-500/30'
+      case 3: return 'border-green-500 bg-green-500/30'
+      case 4: return 'border-green-600 bg-green-600/30'
       default: return 'border-gray-500 bg-gray-500/30'
     }
   }
 
-  const getUnselectedCircleStyles = (optionIndex: number) => {
+  const getUnselectedCircleStyles = (optionIndex: number, isMcq: boolean) => {
+    if (isMcq) {
+      return 'border-gray-500 bg-transparent'
+    }
     // Unselected circles show only outline (border) with transparent background
     switch (optionIndex) {
-      case 0: return 'border-red-600 bg-transparent'  // Strongly Agree - red outline
-      case 1: return 'border-red-500 bg-transparent'  // Agree - light red outline
-      case 2: return 'border-gray-500 bg-transparent'   // Neutral - gray outline
-      case 3: return 'border-green-500 bg-transparent'    // Disagree - light green outline
-      case 4: return 'border-green-600 bg-transparent'    // Strongly Disagree - dark green outline
+      case 0: return 'border-red-600 bg-transparent'
+      case 1: return 'border-red-500 bg-transparent'
+      case 2: return 'border-gray-500 bg-transparent'
+      case 3: return 'border-green-500 bg-transparent'
+      case 4: return 'border-green-600 bg-transparent'
       default: return 'border-gray-500 bg-transparent'
     }
   }
@@ -144,14 +149,16 @@ export default function TestQuestions({
                         onChange={() => handleAnswerSelect(question.id, optionIndex)}
                         className="sr-only"
                       />
+                      {(() => { const isMcq = (question as any)?.type === 'mcq' || !(question as any)?.category; return (
                       <div 
                         className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300 hover:scale-110 hover:shadow-lg flex-shrink-0 ${
                           currentPageAnswers[question.id] === optionIndex 
-                            ? getSelectedCircleStyles(optionIndex) + ' animate-bounce'
-                            : getUnselectedCircleStyles(optionIndex)
+                            ? getSelectedCircleStyles(optionIndex, isMcq) + ' animate-bounce'
+                            : getUnselectedCircleStyles(optionIndex, isMcq)
                         }`}
                       >
                       </div>
+                      )})()}
                       <span className="text-sm sm:text-base md:text-lg font-normal text-gray-700 leading-relaxed flex-1">
                         {option}
                       </span>

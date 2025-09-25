@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { getAllQuestions } from '@/lib/db-operations'
+import { getMixedQuestions } from '@/lib/db-operations'
 
 export async function GET() {
   try {
-    // getAllQuestions() returns questions in random order (shuffled)
-    const questions = await getAllQuestions()
+    // Mix Likert and MCQ questions
+    const questions = await getMixedQuestions()
     return NextResponse.json({ questions })
   } catch (error) {
     console.error('Get questions error:', error)

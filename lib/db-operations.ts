@@ -208,6 +208,82 @@ export async function getAllQuestions() {
   return selectedQuestions
 }
 
+// Fetch Likert-style questions and MCQ knowledge questions, mix and shuffle
+export async function getMixedQuestions(limitLikert?: number, limitMcq?: number) {
+  // Likert questions
+  const { data: likert, error: likertError } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('is_active', true)
+    .order('id', { ascending: true })
+
+  if (likertError) {
+    throw new Error(`Failed to get likert questions: ${likertError.message}`)
+  }
+
+  // MCQ questions
+  const { data: mcq, error: mcqError } = await supabase
+    .from('mcq_questions')
+    .select('*')
+    .eq('is_active', true)
+    .order('id', { ascending: true })
+
+  if (mcqError) {
+    throw new Error(`Failed to get MCQ questions: ${mcqError.message}`)
+  }
+
+  // Map to unified shape
+  type MixedQuestion = any
+  const likertMapped: MixedQuestion[] = (likert || []).map(q => ({
+    id: q.id,
+    type: 'likert',
+    text: q.text,
+    category: q.category,
+    difficulty: q.difficulty || 'easy',
+    options: Array.isArray(q.options) ? q.options : ['Strongly Agree','Agree','Neutral','Disagree','Strongly Disagree']
+  }))
+
+  const mcqMapped: MixedQuestion[] = (mcq || []).map(q => ({
+    id: q.id,
+    type: 'mcq',
+    text: q.text,
+    options: Array.isArray(q.options) ? q.options : [],
+    correctAnswers: Array.isArray(q.correct_answers) ? q.correct_answers : [],
+    difficulty: q.difficulty || 'easy'
+  }))
+
+  // Shuffle each set
+  const shuffle = <T>(arr: T[]) => {
+    const a = [...arr]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }
+
+  const likertShuffled = shuffle(likertMapped)
+  const mcqShuffled = shuffle(mcqMapped)
+
+  // Determine equal counts (1:1 ratio). If limits provided, enforce them; otherwise use min of both sets
+  const equalCountBase = Math.min(likertShuffled.length, mcqShuffled.length)
+  const likertCount = Math.min(equalCountBase, limitLikert ?? equalCountBase)
+  const mcqCount = Math.min(equalCountBase, limitMcq ?? equalCountBase)
+  const count = Math.min(likertCount, mcqCount)
+
+  const likertSelected = likertShuffled.slice(0, count)
+  const mcqSelected = mcqShuffled.slice(0, count)
+
+  // Interleave 1:1 → [likert0, mcq0, likert1, mcq1, ...]
+  const mixed: any[] = []
+  for (let i = 0; i < count; i++) {
+    mixed.push(likertSelected[i])
+    mixed.push(mcqSelected[i])
+  }
+
+  return mixed
+}
+
 // Get questions in original order for admin management
 export async function getAllQuestionsForAdmin() {
   const { data: questions, error } = await supabase

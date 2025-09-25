@@ -81,6 +81,7 @@ export default function AdminLayout({
   const navigation = [
     { name: 'Users', href: '/admin/users', icon: '👥' },
     { name: 'Questions', href: '/admin/questions', icon: '❓' },
+    { name: 'MCQ Questions', href: '/admin/mcq-questions', icon: '📝' },
     { name: 'Test Results', href: '/admin/results', icon: '📈' },
     { name: 'Settings', href: '/admin/settings', icon: '⚙️' },
   ]

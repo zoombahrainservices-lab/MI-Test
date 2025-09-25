@@ -62,6 +62,19 @@ A modern, responsive web application built with Next.js, TypeScript, and Tailwin
 - `npm run db:seed` - Seed database with questions
 - `npm run db:studio` - Open Prisma Studio (database GUI)
 
+### Seed MCQ Questions
+
+We added a script to seed the `mcq_questions` table with Numerical, Logical, Verbal, and Spatial questions you provided.
+
+1. Ensure `.env.local` contains `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+2. Run:
+
+```bash
+npx ts-node scripts/seed-mcq-questions.ts
+```
+
+This inserts rows with `text`, `options` (array), `correct_answers` (array of indices), `difficulty`, `is_active`.
+
 ### Build for Production
 
 ```bash

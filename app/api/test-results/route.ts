@@ -55,7 +55,52 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { answers, scores, percentages, topIntelligence, secondIntelligence, thirdIntelligence, level, timing } = await request.json()
+    const body = await request.json()
+    let { answers, scores, percentages, topIntelligence, secondIntelligence, thirdIntelligence, level, timing } = body
+
+    // Backward/forward compatibility: if client sends `results` array, map it to scores/percentages and compute top 3
+    if ((!scores || !percentages) && Array.isArray(body?.results)) {
+      const resultsArray = body.results as Array<{ category: string; score: number; percentage: number }>
+
+      // Initialize structures for all expected categories to avoid undefined keys
+      const baseScores: Record<string, number> = {
+        linguistic: 0,
+        logical: 0,
+        spatial: 0,
+        musical: 0,
+        bodily: 0,
+        interpersonal: 0,
+        intrapersonal: 0,
+        naturalist: 0,
+      }
+      const basePercentages: Record<string, number> = { ...baseScores }
+
+      for (const r of resultsArray) {
+        // normalize incoming categories to lowercase canonical keys
+        const c = (r.category || '').toLowerCase()
+        const mapKey = c.includes('logical') ? 'logical'
+          : c.includes('linguistic') ? 'linguistic'
+          : c.includes('spatial') ? 'spatial'
+          : (c.includes('music') || c.includes('creative')) ? 'musical'
+          : (c.includes('bodily') || c.includes('kinesthetic')) ? 'bodily'
+          : c.includes('interpersonal') ? 'interpersonal'
+          : c.includes('intrapersonal') ? 'intrapersonal'
+          : c.includes('natural') ? 'naturalist'
+          : c
+        baseScores[mapKey] = r.score
+        basePercentages[mapKey] = r.percentage
+      }
+
+      // Sort by percentage to derive top three categories
+      const sorted = [...resultsArray].sort((a, b) => b.percentage - a.percentage)
+      scores = baseScores as typeof scores
+      percentages = basePercentages as typeof percentages
+      topIntelligence = sorted[0]?.category || 'linguistic'
+      secondIntelligence = sorted[1]?.category || 'logical'
+      thirdIntelligence = sorted[2]?.category || 'spatial'
+      level = body.level || 'combined'
+      timing = body.timing ?? null
+    }
 
     // Validate input
     if (!answers || !scores || !percentages) {

@@ -34,6 +34,7 @@ export default function DiscoverPage() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
+  const [resultsTiming, setResultsTiming] = useState<any>(null)
 
   // Constants for pagination
   const QUESTIONS_PER_PAGE = 1
@@ -64,7 +65,7 @@ export default function DiscoverPage() {
     fetchQuestions()
   }, [])
 
-  const saveTestResultToDatabase = async (results: TestResult[]) => {
+  const saveTestResultToDatabase = async (results: TestResult[], timingExtra?: any) => {
     if (!user) {
       console.error('No user found for saving test results')
       return
@@ -95,7 +96,9 @@ export default function DiscoverPage() {
             difficulty: questions.find(q => q.id === parseInt(questionId))?.difficulty || 'easy'
           })),
           results: results,
-          gender: gender
+          gender: gender,
+          level: 'combined',
+          timing: timingExtra || null
         })
       })
 
@@ -115,6 +118,18 @@ export default function DiscoverPage() {
   }
 
   const calculateResults = (answers: Record<number, number>): TestResult[] => {
+    const normalizeCategory = (raw: string): string => {
+      const c = (raw || '').toLowerCase()
+      if (c.includes('logical')) return 'logical'
+      if (c.includes('linguistic')) return 'linguistic'
+      if (c.includes('spatial')) return 'spatial'
+      if (c.includes('music') || c.includes('creative')) return 'musical'
+      if (c.includes('bodily') || c.includes('kinesthetic')) return 'bodily'
+      if (c.includes('interpersonal')) return 'interpersonal'
+      if (c.includes('intrapersonal')) return 'intrapersonal'
+      if (c.includes('natural')) return 'naturalist'
+      return c
+    }
     const categories = [
       'linguistic',
       'logical', 
@@ -139,9 +154,16 @@ export default function DiscoverPage() {
     Object.entries(answers).forEach(([questionId, answer]) => {
       const question = questions.find(q => q.id === parseInt(questionId))
       if (question) {
+        // If question is MCQ type, it won't have a category; skip scoring for MI test
+        // Mixed fetch returns MCQ with fields: type='mcq' (no category). Our frontend `Question` type may not include it, so guard by presence.
+        const anyQ: any = question as any
+        if (anyQ.type === 'mcq' || !question.category) {
+          return
+        }
+        const key = normalizeCategory(question.category)
         // Convert 0-4 to 1-5
-        categoryScores[question.category] += answer + 1
-        categoryCounts[question.category] += 1
+        categoryScores[key] += answer + 1
+        categoryCounts[key] += 1
       }
     })
 
@@ -242,8 +264,27 @@ export default function DiscoverPage() {
     const results = calculateResults(finalAnswers)
     setTestResults(results)
 
+    // Compute MCQ summary and details
+    const mcqDetails: any[] = []
+    let mcqTotal = 0
+    let mcqCorrect = 0
+    questions.forEach((q: any) => {
+      if (q?.type === 'mcq') {
+        const selectedIndex = finalAnswers[q.id]
+        if (selectedIndex !== undefined) {
+          mcqTotal += 1
+          const correct = Array.isArray(q.correctAnswers) && q.correctAnswers.includes(selectedIndex)
+          if (correct) mcqCorrect += 1
+          mcqDetails.push({ id: q.id, selectedIndex, correctAnswers: q.correctAnswers || [], correct })
+        }
+      }
+    })
+
+    const timingPayload = { mcq: { total: mcqTotal, correct: mcqCorrect, details: mcqDetails } }
+    setResultsTiming(timingPayload)
+
     // Save to database
-    await saveTestResultToDatabase(results)
+    await saveTestResultToDatabase(results, timingPayload)
 
     // Move to results step
     setCurrentStep('results')
@@ -394,7 +435,7 @@ export default function DiscoverPage() {
             onRestartTest={handleRestartTest}
             showNextLevel={false}
             showPrint={true}
-            timing={null}
+            timing={resultsTiming}
             getIntelligenceDescription={getIntelligenceDescription}
           />
         )}

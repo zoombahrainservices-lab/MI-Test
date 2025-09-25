@@ -19,34 +19,50 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
   const secondResult = sortedResults[1]
   const thirdResult = sortedResults[2]
 
-  const getIntelligenceIcon = (category: string) => {
-    const icons = {
-      'Linguistic': '📚',
-      'Logical-Mathematical': '🔢',
-      'Musical & Creative': '🎨',
-      'Bodily-Kinesthetic': '🏃',
-      'Interpersonal': '👥',
-      'Intrapersonal': '🧠',
-      'Naturalistic': '🌿',
-      'Existential/Spiritual': '🕊️',
-      'Spatial': '🧩'
+  const normalize = (c: string) => (c || '').toLowerCase()
+  const labelFor = (category: string) => {
+    const key = normalize(category)
+    const labels: Record<string, string> = {
+      linguistic: 'Linguistic',
+      logical: 'Logical-Mathematical',
+      spatial: 'Spatial',
+      musical: 'Musical & Creative',
+      bodily: 'Bodily-Kinesthetic',
+      interpersonal: 'Interpersonal',
+      intrapersonal: 'Intrapersonal',
+      naturalist: 'Naturalistic',
     }
-    return icons[category as keyof typeof icons] || '💡'
+    return labels[key] || category
+  }
+
+  const getIntelligenceIcon = (category: string) => {
+    const key = normalize(category)
+    const icons: Record<string, string> = {
+      linguistic: '📚',
+      logical: '🔢',
+      musical: '🎨',
+      bodily: '🏃',
+      interpersonal: '👥',
+      intrapersonal: '🧠',
+      naturalist: '🌿',
+      spatial: '🧩',
+    }
+    return icons[key] || '💡'
   }
 
   const getIntelligenceColor = (category: string) => {
-    const colors = {
-      'Linguistic': 'from-blue-500 to-blue-600',
-      'Logical-Mathematical': 'from-purple-500 to-purple-600',
-      'Musical & Creative': 'from-pink-500 to-pink-600',
-      'Bodily-Kinesthetic': 'from-green-500 to-green-600',
-      'Interpersonal': 'from-indigo-500 to-indigo-600',
-      'Intrapersonal': 'from-red-500 to-red-600',
-      'Naturalistic': 'from-emerald-500 to-emerald-600',
-      'Existential/Spiritual': 'from-violet-500 to-violet-600',
-      'Spatial': 'from-orange-500 to-orange-600'
+    const key = normalize(category)
+    const colors: Record<string, string> = {
+      linguistic: 'from-blue-500 to-blue-600',
+      logical: 'from-purple-500 to-purple-600',
+      musical: 'from-pink-500 to-pink-600',
+      bodily: 'from-green-500 to-green-600',
+      interpersonal: 'from-indigo-500 to-indigo-600',
+      intrapersonal: 'from-red-500 to-red-600',
+      naturalist: 'from-emerald-500 to-emerald-600',
+      spatial: 'from-orange-500 to-orange-600',
     }
-    return colors[category as keyof typeof colors] || 'from-gray-500 to-gray-600'
+    return colors[key] || 'from-gray-500 to-gray-600'
   }
 
   const formatTime = (seconds: number) => {
@@ -71,33 +87,45 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
           </p>
         </div>
 
+        {/* MCQ Summary */}
+        {timing?.mcq && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="text-green-800 text-sm sm:text-base">
+                <span className="font-semibold">MCQ Score:</span> {timing.mcq.correct} / {timing.mcq.total}
+              </div>
+              <div className="text-green-700 text-sm">Knowledge questions answered correctly</div>
+            </div>
+          </div>
+        )}
+
         {/* Top 3 Results */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* First Place */}
           <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg p-6 text-center">
             <div className="text-4xl mb-3">🥇</div>
             <div className="text-2xl mb-2">{getIntelligenceIcon(topResult.category)}</div>
-            <h3 className="text-xl font-bold text-yellow-800 mb-2">{topResult.category}</h3>
+            <h3 className="text-xl font-bold text-yellow-800 mb-2">{labelFor(topResult.category)}</h3>
             <div className="text-3xl font-bold text-yellow-600 mb-2">{topResult.percentage}%</div>
-            <p className="text-sm text-yellow-700">{getIntelligenceDescription(topResult.category)}</p>
+            <p className="text-sm text-yellow-700">{getIntelligenceDescription(normalize(topResult.category))}</p>
           </div>
 
           {/* Second Place */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-lg p-6 text-center">
             <div className="text-4xl mb-3">🥈</div>
             <div className="text-2xl mb-2">{getIntelligenceIcon(secondResult.category)}</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{secondResult.category}</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">{labelFor(secondResult.category)}</h3>
             <div className="text-3xl font-bold text-gray-600 mb-2">{secondResult.percentage}%</div>
-            <p className="text-sm text-gray-700">{getIntelligenceDescription(secondResult.category)}</p>
+            <p className="text-sm text-gray-700">{getIntelligenceDescription(normalize(secondResult.category))}</p>
           </div>
 
           {/* Third Place */}
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-lg p-6 text-center">
             <div className="text-4xl mb-3">🥉</div>
             <div className="text-2xl mb-2">{getIntelligenceIcon(thirdResult.category)}</div>
-            <h3 className="text-xl font-bold text-orange-800 mb-2">{thirdResult.category}</h3>
+            <h3 className="text-xl font-bold text-orange-800 mb-2">{labelFor(thirdResult.category)}</h3>
             <div className="text-3xl font-bold text-orange-600 mb-2">{thirdResult.percentage}%</div>
-            <p className="text-sm text-orange-700">{getIntelligenceDescription(thirdResult.category)}</p>
+            <p className="text-sm text-orange-700">{getIntelligenceDescription(normalize(thirdResult.category))}</p>
           </div>
         </div>
 
@@ -110,7 +138,7 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{getIntelligenceIcon(result.category)}</span>
-                    <span className="text-lg font-semibold text-gray-800">{result.category}</span>
+                    <span className="text-lg font-semibold text-gray-800">{labelFor(result.category)}</span>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-gray-600">{result.percentage}%</div>
@@ -122,7 +150,7 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
                     style={{ width: `${result.percentage}%` }}
                   ></div>
                 </div>
-                <p className="text-sm text-gray-600">{getIntelligenceDescription(result.category)}</p>
+                <p className="text-sm text-gray-600">{getIntelligenceDescription(normalize(result.category))}</p>
               </div>
             ))}
           </div>
@@ -133,7 +161,7 @@ export default function TestResults({ results, level, onMoveToNextLevel, onResta
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
           <h3 className="text-xl font-bold text-blue-800 mb-3">What This Means for You</h3>
           <div className="space-y-2 text-blue-700">
-            <p>• <strong>Your strongest area</strong> ({topResult.category}) represents your natural learning style and career preferences</p>
+            <p>• <strong>Your strongest area</strong> ({labelFor(topResult.category)}) represents your natural learning style and career preferences</p>
             <p>• <strong>Your secondary strengths</strong> can be developed further to create a well-rounded skill set</p>
             <p>• <strong>All intelligences can be improved</strong> through practice and exposure to different learning experiences</p>
             <p>• <strong>Consider careers</strong> that align with your top 2-3 intelligence areas for maximum satisfaction</p>
