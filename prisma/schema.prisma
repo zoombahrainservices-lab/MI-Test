@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  testResults TestResult[]
+
+  @@map("users")
+}
+
+model TestResult {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Test answers (stored as JSON)
+  answers Json
+
+  // Calculated results
+  linguisticScore        Int @map("linguistic_score")
+  logicalScore          Int @map("logical_score")
+  spatialScore          Int @map("spatial_score")
+  musicalScore          Int @map("musical_score")
+  bodilyScore           Int @map("bodily_score")
+  interpersonalScore    Int @map("interpersonal_score")
+  intrapersonalScore    Int @map("intrapersonal_score")
+  naturalistScore       Int @map("naturalist_score")
+
+  // Percentages
+  linguisticPercentage        Int @map("linguistic_percentage")
+  logicalPercentage          Int @map("logical_percentage")
+  spatialPercentage          Int @map("spatial_percentage")
+  musicalPercentage          Int @map("musical_percentage")
+  bodilyPercentage           Int @map("bodily_percentage")
+  interpersonalPercentage    Int @map("interpersonal_percentage")
+  intrapersonalPercentage    Int @map("intrapersonal_percentage")
+  naturalistPercentage       Int @map("naturalist_percentage")
+
+  // Top 3 intelligences
+  topIntelligence      String @map("top_intelligence")
+  secondIntelligence   String @map("second_intelligence")
+  thirdIntelligence    String @map("third_intelligence")
+
+  // Level and timing data
+  level                String @default("combined")
+  timingData           Json?  @map("timing_data")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("test_results")
+}
+
+model Question {
+  id         Int      @id @default(autoincrement())
+  text       String
+  category   String
+  difficulty String   @default("easy") // easy, medium, hard
+  isActive   Boolean  @default(true) @map("is_active")
+  options    Json     // Array of options stored as JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("questions")
+}
+
+// Multiple-choice knowledge questions with one or more correct answers
+model MCQQuestion {
+  id              Int      @id @default(autoincrement())
+  text            String
+  options         Json     // Array<string>
+  correctAnswers  Json     @map("correct_answers") // Array<number> of option indices
+  explanation     String?  // Optional explanation
+  difficulty      String   @default("easy")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("mcq_questions")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("admin") // admin, super_admin
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  
+  // Daily stats
+  totalTests     Int @default(0) @map("total_tests")
+  totalUsers     Int @default(0) @map("total_users")
+  
+  // Intelligence distribution
+  linguisticCount     Int @default(0) @map("linguistic_count")
+  logicalCount        Int @default(0) @map("logical_count")
+  spatialCount        Int @default(0) @map("spatial_count")
+  musicalCount        Int @default(0) @map("musical_count")
+  bodilyCount         Int @default(0) @map("bodily_count")
+  interpersonalCount  Int @default(0) @map("interpersonal_count")
+  intrapersonalCount  Int @default(0) @map("intrapersonal_count")
+  naturalistCount     Int @default(0) @map("naturalist_count")
+
+  @@map("analytics")
+}
