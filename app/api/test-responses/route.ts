@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       gender: gender || null,
       level: 'combined',
-      answers: responsesArray, // Store responses as array of objects with question_id and answers
+      answers: answersArray, // Store responses as array of objects with question_id and answers
       responses: responses, // Store raw responses as JSONB
       results: results,
       enhanced_results: enhancedResults || null,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       message: 'Test data stored successfully',
       testResultId: testResult.id,
-      responsesCount: responseData.length
+      responsesCount: responses.length
     })
 
   } catch (error) {
