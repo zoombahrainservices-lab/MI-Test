@@ -17,7 +17,7 @@ export default function EnhancedTestResults({
 }: EnhancedTestResultsProps) {
   
   console.log('EnhancedTestResults received assessmentResult:', assessmentResult)
-  console.log('Top 3 Intelligences:', assessmentResult?.top3Intelligences)
+  console.log('Top Intelligences:', assessmentResult?.topIntelligences)
   console.log('Quotients:', assessmentResult?.quotients)
   console.log('Career Matches:', assessmentResult?.careerMatches)
   
@@ -27,7 +27,7 @@ export default function EnhancedTestResults({
     return <div>No assessment results available</div>
   }
   
-  const topIntelligences = assessmentResult.topIntelligences || assessmentResult.top3Intelligences || []
+  const topIntelligences = assessmentResult.topIntelligences || []
   const quotients = assessmentResult.quotients || []
   const careerMatches = assessmentResult.careerMatches || []
   const bestFitCareers = assessmentResult.bestFitCareers || careerMatches.slice(0, 3)

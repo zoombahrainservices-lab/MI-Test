@@ -608,10 +608,10 @@ export default function DiscoverPage() {
                  <p>Using Enhanced Results: {useEnhancedResults ? 'Yes' : 'No'}</p>
                  {enhancedResults && (
                    <div className="mt-2">
-                     <p>Top 3 Intelligences: {enhancedResults.top3Intelligences?.length || 0}</p>
-                     <p>Quotient Scores: {enhancedResults.quotientScores?.length || 0}</p>
-                     <p>Top 3 Sample: {JSON.stringify(enhancedResults.top3Intelligences?.slice(0, 2) || [])}</p>
-                     <p>Quotient Sample: {JSON.stringify(enhancedResults.quotientScores?.slice(0, 2) || [])}</p>
+                     <p>Top Intelligences: {enhancedResults.topIntelligences?.length || 0}</p>
+                     <p>Quotient Scores: {enhancedResults.quotients?.length || 0}</p>
+                     <p>Top 3 Sample: {JSON.stringify(enhancedResults.topIntelligences?.slice(0, 2) || [])}</p>
+                     <p>Quotient Sample: {JSON.stringify(enhancedResults.quotients?.slice(0, 2) || [])}</p>
                    </div>
                  )}
                  {testResults.length > 0 && (
