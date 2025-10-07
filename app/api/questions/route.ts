@@ -22,7 +22,8 @@ export async function GET() {
     return NextResponse.json({ questions })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Internal server error: ' + errorMessage }, { status: 500 })
   }
 }
 
@@ -63,7 +64,8 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Internal server error: ' + errorMessage }, { status: 500 })
   }
 }
 
@@ -82,6 +84,7 @@ export async function DELETE() {
     return NextResponse.json({ message: 'Questions cleared successfully' })
   } catch (error) {
     console.error('Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Internal server error: ' + errorMessage }, { status: 500 })
   }
 }

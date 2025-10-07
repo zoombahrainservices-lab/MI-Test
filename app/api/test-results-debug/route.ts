@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error in test-results-debug API:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: 'Internal server error: ' + errorMessage }, { status: 500 })
   }
 }
