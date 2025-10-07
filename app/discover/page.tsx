@@ -7,7 +7,9 @@ import Header from '../components/Header'
 import TestIntro from '../components/TestIntro'
 import TestQuestions from '../components/TestQuestions'
 import TestResults from '../components/TestResults'
+import EnhancedTestResults from '../components/EnhancedTestResults'
 import { Question } from '../data/questions'
+import { MIAssessmentEngine, AssessmentResult } from '../../lib/mi-assessment-engine'
 
 interface TestAnswer {
   questionId: number
@@ -28,6 +30,7 @@ export default function DiscoverPage() {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [testResults, setTestResults] = useState<TestResult[]>([])
+  const [enhancedResults, setEnhancedResults] = useState<AssessmentResult | null>(null)
   const [saving, setSaving] = useState(false)
   const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [currentPageAnswers, setCurrentPageAnswers] = useState<Record<number, number>>({})
@@ -35,6 +38,7 @@ export default function DiscoverPage() {
   const [questionsLoading, setQuestionsLoading] = useState(true)
   const [questionsError, setQuestionsError] = useState<string | null>(null)
   const [resultsTiming, setResultsTiming] = useState<any>(null)
+  const [useEnhancedResults, setUseEnhancedResults] = useState(true)
 
   // Constants for pagination
   const QUESTIONS_PER_PAGE = 1
@@ -65,7 +69,7 @@ export default function DiscoverPage() {
     fetchQuestions()
   }, [])
 
-  const saveTestResultToDatabase = async (results: TestResult[], timingExtra?: any) => {
+  const saveTestResultToDatabase = async (results: TestResult[], enhancedResults?: any, timingExtra?: any) => {
     if (!user) {
       console.error('No user found for saving test results')
       return
@@ -74,33 +78,56 @@ export default function DiscoverPage() {
     try {
       const token = localStorage.getItem('token')
       console.log('Token from localStorage:', token ? 'Found' : 'Not found')
-      console.log('Token length:', token ? token.length : 0)
-      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'None')
       console.log('User from useAuth:', user)
 
       if (!token) {
         throw new Error('No authentication token found')
       }
 
-      const response = await fetch('/api/test-results', {
+      // Prepare responses data
+      const responses = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId: parseInt(questionId),
+        answer: answer + 1, // Convert 0-4 to 1-5
+        category: questions.find(q => q.id === parseInt(questionId))?.category || 'unknown',
+        difficulty: questions.find(q => q.id === parseInt(questionId))?.difficulty || 'easy'
+      }))
+
+      // Try the new API first, fallback to simple API
+      let response = await fetch('/api/test-responses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          answers: Object.entries(answers).map(([questionId, answer]) => ({
-            questionId: parseInt(questionId),
-            answer: answer + 1, // Convert 0-4 to 1-5
-            category: questions.find(q => q.id === parseInt(questionId))?.category || 'unknown',
-            difficulty: questions.find(q => q.id === parseInt(questionId))?.difficulty || 'easy'
-          })),
+          userId: user.id,
+          responses: responses,
           results: results,
+          enhancedResults: enhancedResults,
           gender: gender,
-          level: 'combined',
           timing: timingExtra || null
         })
       })
+
+      // If the new API fails, try the simple API
+      if (!response.ok) {
+        console.log('New API failed, trying simple API...')
+        response = await fetch('/api/test-results-simple', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            responses: responses,
+            results: results,
+            enhancedResults: enhancedResults,
+            gender: gender,
+            timing: timingExtra || null
+          })
+        })
+      }
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -118,6 +145,12 @@ export default function DiscoverPage() {
   }
 
   const calculateResults = (answers: Record<number, number>): TestResult[] => {
+    console.log('=== CALCULATION DEBUG ===')
+    console.log('Calculating results with answers:', answers)
+    console.log('Total answers provided:', Object.keys(answers).length)
+    console.log('Available questions:', questions.length)
+    console.log('Questions with categories:', questions.filter(q => q.category).length)
+    
     const normalizeCategory = (raw: string): string => {
       const c = (raw || '').toLowerCase()
       if (c.includes('logical')) return 'logical'
@@ -151,21 +184,38 @@ export default function DiscoverPage() {
     })
 
     // Calculate scores
+    let processedQuestions = 0
+    let skippedQuestions = 0
+    
     Object.entries(answers).forEach(([questionId, answer]) => {
       const question = questions.find(q => q.id === parseInt(questionId))
       if (question) {
+        console.log(`Processing question ${questionId}: category=${question.category}, answer=${answer}`)
         // If question is MCQ type, it won't have a category; skip scoring for MI test
         // Mixed fetch returns MCQ with fields: type='mcq' (no category). Our frontend `Question` type may not include it, so guard by presence.
         const anyQ: any = question as any
         if (anyQ.type === 'mcq' || !question.category) {
+          console.log(`Skipping question ${questionId} - no category or MCQ type`)
+          skippedQuestions++
           return
         }
         const key = normalizeCategory(question.category)
-        // Convert 0-4 to 1-5
-        categoryScores[key] += answer + 1
+        // Answer is already in range 1-5, no conversion needed
+        const scoreValue = answer
+        categoryScores[key] += scoreValue
         categoryCounts[key] += 1
+        processedQuestions++
+        console.log(`Added to ${key}: score=${scoreValue}, total=${categoryScores[key]}, count=${categoryCounts[key]}`)
+      } else {
+        console.log(`Question ${questionId} not found in questions array`)
+        skippedQuestions++
       }
     })
+    
+    console.log(`Processed questions: ${processedQuestions}, Skipped: ${skippedQuestions}`)
+
+    console.log('Final category scores:', categoryScores)
+    console.log('Final category counts:', categoryCounts)
 
     // Calculate percentages
     const results: TestResult[] = categories.map(category => {
@@ -174,6 +224,8 @@ export default function DiscoverPage() {
       const maxPossible = count * 5
       const percentage = count > 0 ? Math.round((score / maxPossible) * 100) : 0
       
+      console.log(`${category}: score=${score}, count=${count}, maxPossible=${maxPossible}, percentage=${percentage}`)
+      
       return {
         category,
         score,
@@ -181,7 +233,10 @@ export default function DiscoverPage() {
       }
     })
 
-    return results.sort((a, b) => b.percentage - a.percentage)
+    const sortedResults = results.sort((a, b) => b.percentage - a.percentage)
+    console.log('Final sorted results:', sortedResults)
+    console.log('=== CALCULATION COMPLETE ===')
+    return sortedResults
   }
 
   const handleStartTest = () => {
@@ -196,7 +251,7 @@ export default function DiscoverPage() {
     setCurrentPageAnswers({})
   }
 
-  // Initialize currentPageAnswers when page changes (but not when answers change to avoid loops)
+  // Initialize currentPageAnswers when page changes
   useEffect(() => {
     if (currentStep === 'test') {
       const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
@@ -210,9 +265,14 @@ export default function DiscoverPage() {
         }
       })
       
+      console.log(`=== PAGE INITIALIZATION DEBUG (Page ${currentPageIndex + 1}) ===`)
+      console.log('Current page questions:', currentPageQuestions.map(q => q.id))
+      console.log('Existing answers for this page:', pageAnswers)
+      console.log('All answers so far:', answers)
+      
       setCurrentPageAnswers(pageAnswers)
     }
-  }, [currentPageIndex, currentStep]) // Removed 'answers' from dependencies to prevent loops
+  }, [currentPageIndex, currentStep, answers]) // Added 'answers' back to properly sync
 
   const getCurrentPageQuestions = () => {
     const startIndex = currentPageIndex * QUESTIONS_PER_PAGE
@@ -221,25 +281,50 @@ export default function DiscoverPage() {
   }
 
   const handleAnswerSelect = (questionId: number, answer: number) => {
-    setCurrentPageAnswers(prev => ({
-      ...prev,
-      [questionId]: answer
-    }))
+    console.log(`=== ANSWER SELECTION DEBUG ===`)
+    console.log(`Question ${questionId} answered with: ${answer}`)
+    
+    // Update current page answers
+    setCurrentPageAnswers(prev => {
+      const newPageAnswers = {
+        ...prev,
+        [questionId]: answer
+      }
+      console.log('Updated current page answers:', newPageAnswers)
+      return newPageAnswers
+    })
+    
+    // Also immediately update main answers to ensure no data loss
+    setAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        [questionId]: answer
+      }
+      console.log('Updated main answers:', newAnswers)
+      return newAnswers
+    })
   }
 
   const handleNextPage = useCallback(() => {
     // Save current page answers to main answers
-    setAnswers(prev => ({
-      ...prev,
-      ...currentPageAnswers
-    }))
+    console.log('=== PAGE NAVIGATION DEBUG ===')
+    console.log('Current page answers being saved:', currentPageAnswers)
+    console.log('Previous main answers:', answers)
+    setAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        ...currentPageAnswers
+      }
+      console.log('New combined answers:', newAnswers)
+      return newAnswers
+    })
 
     if (currentPageIndex < TOTAL_PAGES - 1) {
       const newPageIndex = currentPageIndex + 1
       setCurrentPageIndex(newPageIndex)
       
-      // Clear current page answers for the new page
-      setCurrentPageAnswers({})
+      // Don't clear current page answers - they should be preserved
+      // setCurrentPageAnswers({})
     } else {
       handleSubmitTest()
     }
@@ -250,19 +335,56 @@ export default function DiscoverPage() {
       const newPageIndex = currentPageIndex - 1
       setCurrentPageIndex(newPageIndex)
       
-      // Clear current page answers for the new page
-      setCurrentPageAnswers({})
+      // Don't clear current page answers - they should be preserved
+      // setCurrentPageAnswers({})
     }
   }, [currentPageIndex])
 
   const handleSubmitTest = async () => {
     // Save final answers
     const finalAnswers = { ...answers, ...currentPageAnswers }
+    console.log('=== ASSESSMENT SUBMISSION DEBUG ===')
+    console.log('Main answers:', answers)
+    console.log('Current page answers:', currentPageAnswers)
+    console.log('Final answers for calculation:', finalAnswers)
+    console.log('Total answers collected:', Object.keys(finalAnswers).length)
+    console.log('Questions available for calculation:', questions.length)
+    
+    // Validate that we have answers for all questions
+    const answeredQuestionIds = Object.keys(finalAnswers).map(id => parseInt(id))
+    const allQuestionIds = questions.map(q => q.id)
+    const missingAnswers = allQuestionIds.filter(id => !answeredQuestionIds.includes(id))
+    
+    console.log('Answered question IDs:', answeredQuestionIds)
+    console.log('All question IDs:', allQuestionIds)
+    console.log('Missing answers for questions:', missingAnswers)
+    
+    if (missingAnswers.length > 0) {
+      console.warn(`⚠️ WARNING: ${missingAnswers.length} questions have no answers!`)
+      console.warn('Missing questions:', missingAnswers)
+    }
+    
+    console.log('=====================================')
     setAnswers(finalAnswers)
 
-    // Calculate results
+    // Calculate traditional results
     const results = calculateResults(finalAnswers)
+    console.log('Traditional results calculated:', results)
     setTestResults(results)
+
+    // Calculate enhanced results using the new assessment engine
+    const assessmentEngine = new MIAssessmentEngine()
+    const enhancedAssessment = assessmentEngine.processAnswers(finalAnswers, questions)
+    console.log('Enhanced assessment result:', enhancedAssessment)
+    console.log('Enhanced assessment structure:', {
+      hasTopIntelligences: !!enhancedAssessment.topIntelligences,
+      hasQuotients: !!enhancedAssessment.quotients,
+      hasCareerMatches: !!enhancedAssessment.careerMatches,
+      topIntelligencesCount: enhancedAssessment.topIntelligences?.length || 0,
+      quotientsCount: enhancedAssessment.quotients?.length || 0,
+      careerMatchesCount: enhancedAssessment.careerMatches?.length || 0
+    })
+    setEnhancedResults(enhancedAssessment)
 
     // Compute MCQ summary and details
     const mcqDetails: any[] = []
@@ -283,8 +405,8 @@ export default function DiscoverPage() {
     const timingPayload = { mcq: { total: mcqTotal, correct: mcqCorrect, details: mcqDetails } }
     setResultsTiming(timingPayload)
 
-    // Save to database
-    await saveTestResultToDatabase(results, timingPayload)
+    // Save to database (using both traditional and enhanced results)
+    await saveTestResultToDatabase(results, enhancedAssessment, timingPayload)
 
     // Move to results step
     setCurrentStep('results')
@@ -296,6 +418,7 @@ export default function DiscoverPage() {
     setAnswers({})
     setCurrentPageAnswers({})
     setTestResults([])
+    setEnhancedResults(null)
     setGender('')
   }
 
@@ -428,16 +551,77 @@ export default function DiscoverPage() {
         )}
 
         {currentStep === 'results' && (
-          <TestResults
-            results={testResults}
-            level="combined"
-            onMoveToNextLevel={() => {}}
-            onRestartTest={handleRestartTest}
-            showNextLevel={false}
-            showPrint={true}
-            timing={resultsTiming}
-            getIntelligenceDescription={getIntelligenceDescription}
-          />
+          <div className="space-y-6">
+            {/* Results Toggle */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="flex items-center justify-center space-x-4">
+                <button
+                  onClick={() => setUseEnhancedResults(true)}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                    useEnhancedResults 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Enhanced Results
+                </button>
+                <button
+                  onClick={() => setUseEnhancedResults(false)}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                    !useEnhancedResults 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Standard Results
+                </button>
+              </div>
+            </div>
+
+             {/* Results Display */}
+             {useEnhancedResults && enhancedResults ? (
+               <EnhancedTestResults
+                 assessmentResult={enhancedResults}
+                 onRestartTest={handleRestartTest}
+                 showPrint={true}
+                 timing={resultsTiming}
+               />
+             ) : (
+               <TestResults
+                 results={testResults}
+                 level="combined"
+                 onMoveToNextLevel={() => {}}
+                 onRestartTest={handleRestartTest}
+                 showNextLevel={false}
+                 showPrint={true}
+                 timing={resultsTiming}
+                 getIntelligenceDescription={getIntelligenceDescription}
+               />
+             )}
+             
+             {/* Debug Information */}
+             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+               <h3 className="font-semibold text-yellow-800 mb-2">Debug Information</h3>
+               <div className="text-sm text-yellow-700">
+                 <p>Enhanced Results Available: {enhancedResults ? 'Yes' : 'No'}</p>
+                 <p>Traditional Results Available: {testResults.length > 0 ? 'Yes' : 'No'}</p>
+                 <p>Using Enhanced Results: {useEnhancedResults ? 'Yes' : 'No'}</p>
+                 {enhancedResults && (
+                   <div className="mt-2">
+                     <p>Top 3 Intelligences: {enhancedResults.top3Intelligences?.length || 0}</p>
+                     <p>Quotient Scores: {enhancedResults.quotientScores?.length || 0}</p>
+                     <p>Top 3 Sample: {JSON.stringify(enhancedResults.top3Intelligences?.slice(0, 2) || [])}</p>
+                     <p>Quotient Sample: {JSON.stringify(enhancedResults.quotientScores?.slice(0, 2) || [])}</p>
+                   </div>
+                 )}
+                 {testResults.length > 0 && (
+                   <div className="mt-2">
+                     <p>Traditional Results Sample: {JSON.stringify(testResults.slice(0, 3))}</p>
+                   </div>
+                 )}
+               </div>
+             </div>
+          </div>
         )}
       </div>
     </main>
