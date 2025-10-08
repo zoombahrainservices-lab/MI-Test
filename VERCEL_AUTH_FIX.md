@@ -122,7 +122,7 @@ https://mi-test-3xgp6450x-zoom-bahrain-services-projects.vercel.app/api/test-sup
 
 ### 3. If Wrong URL Appears
 
-If you see the old URL (`xfsakpxluorfhumjopgp`), then:
+If you see an incorrect Supabase URL, then:
 
 1. **Go to Vercel Environment Variables:**
    https://vercel.com/zoom-bahrain-services-projects/mi-test/settings/environment-variables
