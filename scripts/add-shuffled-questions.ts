@@ -5,7 +5,7 @@ import { config } from 'dotenv'
 config()
 
 // Initialize Supabase client with hardcoded URL (same as lib/supabase.ts)
-const supabaseUrl = 'https://xfsakpxluorfhumjopgp.supabase.co'
+const supabaseUrl = 'https://llydesdtudepdiebfzfk.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 if (!supabaseServiceKey) {

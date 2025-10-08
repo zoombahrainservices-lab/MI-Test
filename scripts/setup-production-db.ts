@@ -40,13 +40,13 @@ async function testDatabaseConnection() {
     if (error instanceof Error) {
       if (error.message.includes('6543')) {
         console.error('\n🔧 Fix: Make sure your DATABASE_URL uses port 5432, not 6543')
-        console.error('   Correct format: postgresql://postgres:[PASSWORD]@db.xfsakpxluorfhumjopgp.supabase.co:5432/postgres')
+        console.error('   Correct format: postgresql://postgres:[PASSWORD]@db.llydesdtudepdiebfzfk.supabase.co:5432/postgres')
       }
       
       if (error.message.includes('Can\'t reach database server')) {
         console.error('\n🔧 Fix: Check your DATABASE_URL and make sure:')
         console.error('   1. The password is correct')
-        console.error('   2. The host is correct (db.xfsakpxluorfhumjopgp.supabase.co)')
+        console.error('   2. The host is correct (db.llydesdtudepdiebfzfk.supabase.co)')
         console.error('   3. The port is 5432')
         console.error('   4. Your Supabase database is running')
       }

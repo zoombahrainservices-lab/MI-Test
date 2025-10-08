@@ -36,7 +36,7 @@ function updateConfigFile(filePath: string, oldUrl: string, newUrl: string) {
 }
 
 async function updateSupabaseConfig(config: SupabaseConfig) {
-  const oldUrl = 'https://xfsakpxluorfhumjopgp.supabase.co'
+  const oldUrl = 'https://xfsakpxluorfhumjopgp.supabase.co' // Historical reference - old project URL
   const newUrl = config.projectUrl
 
   console.log('🔄 Updating Supabase configuration files...')

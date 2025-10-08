@@ -67,6 +67,8 @@
 - `SUPABASE_SERVICE_ROLE_KEY` = (from Supabase Dashboard)
 - `DATABASE_URL` = `postgresql://postgres:PASSWORD@db.llydesdtudepdiebfzfk.supabase.co:5432/postgres`
 - `JWT_SECRET` = (any secure random string)
+- `GOOGLE_CLIENT_ID` = (from your local `client_secret_*.json` file)
+- `GOOGLE_CLIENT_SECRET` = (from your local `client_secret_*.json` file)
 
 **Get keys from:** https://supabase.com/dashboard/project/llydesdtudepdiebfzfk/settings/api
 

@@ -1,7 +1,7 @@
 // Script to update questions via the admin API
 // This approach uses the existing admin API instead of direct database access
 
-const SUPABASE_URL = 'https://xfsakpxluorfhumjopgp.supabase.co'
+const SUPABASE_URL = 'https://llydesdtudepdiebfzfk.supabase.co'
 
 // All 100 questions from app/data/questions.ts
 const questions = [
